@@ -1,0 +1,96 @@
+openapi: 3.0.3
+info:
+  title: Promenade Area Name Service
+  description: Promenade Area Name Service
+  version: 1.0.0
+servers:
+  - url: 'http://promenade-area-name-promenade-area.router.default.svc.cluster.local/promenadeAreaNameService/rest/areaService/'
+paths:
+  /areas:
+    get:
+      tags:
+        - "Area"
+      summary: "Area Name in square"
+      description: |
+        Find all area name that are present in a square given upper-left and lower-right corners.
+      parameters:
+        - name: "upperLeft"
+          description: upper-left square cohordiantes in Decimal Degrees (DD) formatted as 'longitude,latutude'
+          schema:
+            type: "string"
+          required: true
+          in: "query"
+        - name: "lowerRight"
+          description: lower-right square cohordiantes in Decimal Degrees (DD) formatted as 'longitude,latutude'
+          schema:
+            type: "string"
+          required: true
+          in: "query"
+      responses:
+        '200':
+          description: "OK. numero di contribuenti"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  description: areaNames
+                  type: string
+  /streets:
+    get:
+      tags:
+        - "Area"
+      summary: "Streets in Area "
+      description: |
+        Find all street with given area name.
+      parameters:
+        - name: "areaname"
+          schema:
+            type: "string"
+          required: true
+          in: "query"
+      responses:
+        '200':
+          description: "OK. A list of Streets"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Street'
+components:
+  schemas:
+    Coordinate:
+      type: object
+      properties:
+        latitute:
+          type: number
+        longitude:
+          type: number
+    Street:
+      type: object
+      properties:
+        linkid:
+          type: integer
+        from:
+          type: integer
+        to:
+          type: integer
+        length:
+          description: link lenght [m]
+          type: number
+        speedlimit:
+          type: integer
+        name:
+          type: string
+        weight:
+          description: average travel time [s]
+          type: number
+        ffs:
+          description: free flow speed [Km/h]
+          type: number
+        coordinates:
+          description: link geometry, ordered list of coordinates
+          type: array
+          items:
+            $ref: '#/components/schemas/Coordinate'
