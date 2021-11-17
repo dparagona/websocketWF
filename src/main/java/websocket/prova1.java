@@ -67,7 +67,7 @@ class Message {
     private int aggPeriod;
     private int domainAggTimestamp;
     private int aggTimestamp;
-    private int linkid;
+    private String linkid;
     private String areaName;
 
     public Message(){}
@@ -78,7 +78,7 @@ class Message {
     public void setAggPeriod(int aggPeriod) {this.aggPeriod = aggPeriod;}
     public void setDomainAggTimestamp(int domainAggTimestamp) {this.domainAggTimestamp = domainAggTimestamp;}
     public void setAggTimestamp(int aggTimestamp) {this.aggTimestamp = aggTimestamp;}
-    public void setLinkid(int linkid) {this.linkid = linkid;}
+    public void setLinkid(String linkid) {this.linkid = linkid;}
     public void setAreaName(String areaName) {this.areaName = areaName;}
 
     public float getAvgTravelTime() {return this.avgTravelTime;}
@@ -87,7 +87,7 @@ class Message {
     public int getAggPeriod() {return this.aggPeriod;}
     public int getDomainAggTimestamp() {return this.domainAggTimestamp;}
     public int getAggTimestamp() {return this.aggTimestamp;}
-    public int getLinkid() {return this.linkid;}
+    public String getLinkid() {return this.linkid;}
     public String getAreaName() {return this.areaName;}
 
     public void print(PrintStream ps){
