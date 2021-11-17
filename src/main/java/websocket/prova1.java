@@ -78,8 +78,8 @@ public class prova1 {
 
 //Classe che rappresenta gli oggetti Json restituiti da questo endpoint
 class Message {
-    private float avgTravelTime;
-    private float sdTravelTime;
+    private double avgTravelTime;
+    private double sdTravelTime;
     private int numVehicles;
     private int aggPeriod;
     private int domainAggTimestamp;
@@ -89,8 +89,8 @@ class Message {
 
     public Message(){}
 
-    public void setAvgTravelTime(float avgTravelTime) {this.avgTravelTime = avgTravelTime;}
-    public void setSdTravelTime(float sdTravelTime) {this.sdTravelTime = sdTravelTime;}
+    public void setAvgTravelTime(double avgTravelTime) {this.avgTravelTime = avgTravelTime;}
+    public void setSdTravelTime(double sdTravelTime) {this.sdTravelTime = sdTravelTime;}
     public void setNumVehicles(int numVehicles) {this.numVehicles = numVehicles;}
     public void setAggPeriod(int aggPeriod) {this.aggPeriod = aggPeriod;}
     public void setDomainAggTimestamp(int domainAggTimestamp) {this.domainAggTimestamp = domainAggTimestamp;}
@@ -98,8 +98,8 @@ class Message {
     public void setLinkid(String linkid) {this.linkid = linkid;}
     public void setAreaName(String areaName) {this.areaName = areaName;}
 
-    public float getAvgTravelTime() {return this.avgTravelTime;}
-    public float getSdTravelTime() {return this.sdTravelTime;}
+    public double getAvgTravelTime() {return this.avgTravelTime;}
+    public double getSdTravelTime() {return this.sdTravelTime;}
     public int getNumVehicles() {return this.numVehicles;}
     public int getAggPeriod() {return this.aggPeriod;}
     public int getDomainAggTimestamp() {return this.domainAggTimestamp;}
