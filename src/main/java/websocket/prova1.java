@@ -32,9 +32,12 @@ public class prova1 {
     }
     @OnMessage
     public void onMessage(Session session, Message message)throws IOException {
+		System.out.println(message);
         message.print(System.out);
         if(message != null)
             session.getBasicRemote().sendText("Oggetto ricevuto con successo!");
+		else
+			session.getBasicRemote().sendText("Qualcosa è andato storto nella ricezione del messaggio");
     }
     @OnClose
     public void onClose(Session session)throws IOException{
