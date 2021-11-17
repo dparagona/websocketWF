@@ -45,7 +45,7 @@ public class prova1 {
     public void onError(Session session, Throwable throwable)throws IOException{
         //gestione eccezioni
     }
-    //si usa per inviare i dati, questo è costruito per una chat, perciò bisogna capire se deve essere modificato per questa applicazione
+    //si usa per inviare i dati, questo e' costruito per una chat, percio' bisogna capire se deve essere modificato per questa applicazione
     private static void broadcast(Message message)throws IOException, EncodeException{//
         provaEndpoints.forEach(endpoint -> {
                synchronized (endpoint) {
