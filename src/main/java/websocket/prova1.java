@@ -37,7 +37,7 @@ public class prova1 {
         if(message != null)
             session.getBasicRemote().sendText("Oggetto ricevuto con successo!");
 		else
-			session.getBasicRemote().sendText("Qualcosa è andato storto nella ricezione del messaggio");
+			session.getBasicRemote().sendText("Qualcosa e\' andato storto nella ricezione del messaggio");
     }
     @OnClose
     public void onClose(Session session)throws IOException{
