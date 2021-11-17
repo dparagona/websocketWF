@@ -24,8 +24,21 @@ public class prova1 {
     public void onOpen(Session session)throws IOException {
         this.session = session;
         provaEndpoints.add(this);
-        if(session != null)
+        if(session != null){
             session.getBasicRemote().sendText("Connessione Accettata!");
+			Message messaggio = new Message();
+			messaggio.setAvgTravelTime(9.4185001373291);
+			messaggio.setSdTravelTime(0.0);
+			messaggio.setNumVehicles(1);
+			messaggio.setAggPeriod(179000);
+			messaggio.setDomainAggTimestamp(1536186598000);
+			messaggio.setAggTimestamp(1626183204071);
+			messaggio.setLinkid("12500009324848");
+			messaggio.setAreaName("Albigny-sur-Saone");
+			messaggio.print(System.out);
+			session.getBasicRemote().sendObject(messaggio);
+
+		}
         //analizza la richiesta
         //recupera i dati
         //crea un thread che invia i dati
