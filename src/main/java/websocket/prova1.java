@@ -117,7 +117,7 @@ class Message {
                         +"\nAvgTravelTime: "+this.avgTravelTime
                         +"\nSdTravelTime: "+this.sdTravelTime
                         +"\nNumVehicles: "+this.numVehicles
-                        +"\nAggPeriod: "+this.numVehicles
+                        +"\nAggPeriod: "+this.aggPeriod
                         +"\nDomainAggTimestamp: "+this.domainAggTimestamp
                         +"\nAggTimestamp: "+this.aggTimestamp);
     }
