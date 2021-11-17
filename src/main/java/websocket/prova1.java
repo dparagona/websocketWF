@@ -31,8 +31,8 @@ public class prova1 {
 			messaggio.setSdTravelTime(0.0);
 			messaggio.setNumVehicles(1);
 			messaggio.setAggPeriod(179000);
-			messaggio.setDomainAggTimestamp(1536186598000);
-			messaggio.setAggTimestamp(1626183204071);
+			messaggio.setDomainAggTimestamp(153618659);
+			messaggio.setAggTimestamp(162618320);
 			messaggio.setLinkid("12500009324848");
 			messaggio.setAreaName("Albigny-sur-Saone");
 			messaggio.print(System.out);
