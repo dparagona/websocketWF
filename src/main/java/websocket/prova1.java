@@ -109,6 +109,7 @@ class MessageEncoder implements Encoder.Text<Message>{
 
     @Override
     public String encode(Message object) throws EncodeException {
+		System.out.println("Codifica effettuata.");
         return gson.toJson(object);
     }
 
@@ -124,6 +125,7 @@ class MessageDecoder implements Decoder.Text<Message>{
 
     @Override
     public Message decode(String s) throws DecodeException {
+		System.out.println("Decodifica effettuata.");
         return gson.fromJson(s, Message.class);
     }
 
