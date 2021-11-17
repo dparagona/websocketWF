@@ -32,7 +32,7 @@ public class prova1 {
     }
     @OnMessage
     public void onMessage(Session session, Message message)throws IOException {
-		System.out.println(message);
+		System.out.println("Messaggio: "+message);
         message.print(System.out);
         if(message != null)
             session.getBasicRemote().sendText("Oggetto ricevuto con successo!");
