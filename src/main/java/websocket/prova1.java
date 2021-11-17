@@ -26,22 +26,6 @@ public class prova1 {
         provaEndpoints.add(this);
         if(session != null){
             session.getBasicRemote().sendText("Connessione Accettata!");
-			Message messaggio = new Message();
-			messaggio.setAvgTravelTime(9.4185001373291);
-			messaggio.setSdTravelTime(0.0);
-			messaggio.setNumVehicles(1);
-			messaggio.setAggPeriod(179000);
-			messaggio.setDomainAggTimestamp(153618659);
-			messaggio.setAggTimestamp(162618320);
-			messaggio.setLinkid("12500009324848");
-			messaggio.setAreaName("Albigny-sur-Saone");
-			messaggio.print(System.out);
-			try{
-				session.getBasicRemote().sendObject(messaggio);
-			}catch(EncodeException | IOException e){
-				e.printStackTrace();
-			}
-
 		}
         //analizza la richiesta
         //recupera i dati
@@ -54,9 +38,7 @@ public class prova1 {
 		session.getBasicRemote().sendText("Oggetto ricevuto con successo!");
         if(message != null)
             session.getBasicRemote().sendText("Oggetto ricevuto con successo!");
-		else
-			session.getBasicRemote().sendText("Qualcosa e\' andato storto nella ricezione del messaggio");
-    }
+   }
     @OnClose
     public void onClose(Session session)throws IOException{
         //gestisce la chiusura della connessione
@@ -84,10 +66,10 @@ public class prova1 {
 class Message {
     private double avgTravelTime;
     private double sdTravelTime;
-    private int numVehicles;
-    private int aggPeriod;
-    private int domainAggTimestamp;
-    private int aggTimestamp;
+    private long numVehicles;
+    private long aggPeriod;
+    private long domainAggTimestamp;
+    private long aggTimestamp;
     private String linkid;
     private String areaName;
 
@@ -95,19 +77,19 @@ class Message {
 
     public void setAvgTravelTime(double avgTravelTime) {this.avgTravelTime = avgTravelTime;}
     public void setSdTravelTime(double sdTravelTime) {this.sdTravelTime = sdTravelTime;}
-    public void setNumVehicles(int numVehicles) {this.numVehicles = numVehicles;}
-    public void setAggPeriod(int aggPeriod) {this.aggPeriod = aggPeriod;}
-    public void setDomainAggTimestamp(int domainAggTimestamp) {this.domainAggTimestamp = domainAggTimestamp;}
-    public void setAggTimestamp(int aggTimestamp) {this.aggTimestamp = aggTimestamp;}
+    public void setNumVehicles(long numVehicles) {this.numVehicles = numVehicles;}
+    public void setAggPeriod(long aggPeriod) {this.aggPeriod = aggPeriod;}
+    public void setDomainAggTimestamp(long domainAggTimestamp) {this.domainAggTimestamp = domainAggTimestamp;}
+    public void setAggTimestamp(long aggTimestamp) {this.aggTimestamp = aggTimestamp;}
     public void setLinkid(String linkid) {this.linkid = linkid;}
     public void setAreaName(String areaName) {this.areaName = areaName;}
 
     public double getAvgTravelTime() {return this.avgTravelTime;}
     public double getSdTravelTime() {return this.sdTravelTime;}
-    public int getNumVehicles() {return this.numVehicles;}
-    public int getAggPeriod() {return this.aggPeriod;}
-    public int getDomainAggTimestamp() {return this.domainAggTimestamp;}
-    public int getAggTimestamp() {return this.aggTimestamp;}
+    public long getNumVehicles() {return this.numVehicles;}
+    public long getAggPeriod() {return this.aggPeriod;}
+    public long getDomainAggTimestamp() {return this.domainAggTimestamp;}
+    public long getAggTimestamp() {return this.aggTimestamp;}
     public String getLinkid() {return this.linkid;}
     public String getAreaName() {return this.areaName;}
 
