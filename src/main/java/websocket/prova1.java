@@ -36,7 +36,11 @@ public class prova1 {
 			messaggio.setLinkid("12500009324848");
 			messaggio.setAreaName("Albigny-sur-Saone");
 			messaggio.print(System.out);
-			session.getBasicRemote().sendObject(messaggio);
+			try{
+				session.getBasicRemote().sendObject(messaggio);
+			}catch(EncodeException | IOException e){
+				e.printStackTrace();
+			}
 
 		}
         //analizza la richiesta
