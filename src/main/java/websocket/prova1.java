@@ -35,7 +35,6 @@ public class prova1 {
     public void onMessage(Session session, Message message)throws IOException {
 		System.out.println("Messaggio: "+message);
         message.print(System.out);
-		session.getBasicRemote().sendText("Oggetto ricevuto con successo!");
         if(message != null)
             session.getBasicRemote().sendText("Oggetto ricevuto con successo!");
    }
