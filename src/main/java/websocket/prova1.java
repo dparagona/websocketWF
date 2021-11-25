@@ -162,15 +162,15 @@ class AreaRequest extends Message{
 class RequestedSquare extends Message{
 	private String upperLeftCorner;
 	private String lowerRightCorner;
-
+	
 	public RequestedSquare(){}
-
+	
 	public void setUpperLeftCorner(String upperLeftCorner){this.upperLeftCorner=upperLeftCorner;}
 	public void setLowerRightCornerLat(String lowerRightCorner){this.lowerRightCorner=lowerRightCorner;}
 
 	public String getUpperLeftCorner(){return this.upperLeftCorner;}
 	public String getLowerRightCorner(){return this.lowerRightCorner;}
-
+	
 	public void print(PrintStream ps){
 		String temp = super.getType();
 		ps.println(">>SQUARE FROM CLIENT"
@@ -239,13 +239,13 @@ class MessageDecoder implements Decoder.Text<Message>{
             if (s.contains("geojson")) {
                 System.out.println("Decodifica effettuata.");
                 return gson.fromJson(s, AreaRequest.class);
-            } else if (s.coontains("RequestedSquare")){
+            } else if (s.contains("RequestedSquare")){
 				 System.out.println("Decodifica effettuata.");
 		         return gson.fromJson(s, RequestedSquare.class);
 			}else if (!s.contains("type")) {
                 System.out.println("Decodifica effettuata.");
                 return gson.fromJson(s, Street.class);
-            }
+            } 
         }
         return null;
     }
