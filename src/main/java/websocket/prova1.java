@@ -194,10 +194,10 @@ class MessageDecoder implements Decoder.Text<Message>{
     public Message decode(String s) throws DecodeException {
 
         if(willDecode(s)) {
-            if (s.contains("type")) {
+            if (s.contains("type"+":"+"geojson")) {
                 System.out.println("Decodifica effettuata.");
                 return gson.fromJson(s, AreaRequest.class);
-            } else if (!s.contains("type")) {
+            } else if (!s.contains("type"+":"+"geojson")) {
                 System.out.println("Decodifica effettuata.");
                 return gson.fromJson(s, Street.class);
             }
