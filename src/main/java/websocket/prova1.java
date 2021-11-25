@@ -13,7 +13,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 @ServerEndpoint(
         value = "/prova1",
         decoders = {MessageDecoder.class},
-        encoders = {StreetEncoder.class, RequestEncoder.class}
+        encoders = {StreetEncoder.class, RequestEncoder.class, RequestedSquareEncoder.class}
 )
 
 public class prova1 {
@@ -49,7 +49,15 @@ public class prova1 {
                 session.getBasicRemote().sendText("Oggetto ricevuto con successo!");
             if (request != null)
                 session.getBasicRemote().sendText("Oggetto castato con successo!");
-        }
+        }else if (message instanceof RequestedSquare){
+			System.out.println("Messaggio: " + message);
+            RequestedSquare square = (RequestedSquare) message;
+            square.print(System.out);
+            if(message != null)
+                session.getBasicRemote().sendText("Oggetto ricevuto con successo!");
+            if (square != null)
+                session.getBasicRemote().sendText("Oggetto castato con successo!");
+		}
    }
 
     @OnClose
@@ -151,6 +159,25 @@ class AreaRequest extends Message{
                 +"\nDecimateSkip: "+this.decimateSkip);
     }
 }
+class RequestedSquare extends Message{
+	private String upperLeftCorner;
+	private String lowerRightCorner;
+
+	public RequestedSquare(){}
+
+	public void setUpperLeftCorner(String upperLeftCorner){this.upperLeftCorner=upperLeftCorner;}
+	public void setLowerRightCornerLat(String lowerRightCorner){this.lowerRightCorner=lowerRightCorner;}
+
+	public String getUpperLeftCorner(){return this.upperLeftCorner;}
+	public String getLowerRightCorner(){return this.lowerRightCorner;}
+
+	public void print(PrintStream ps){
+		String temp = super.getType();
+		ps.println(">>SQUARE FROM CLIENT"
+				+"\nUpper Left Corner: " + this.upperLeftCorner
+				+"\nLower Right Corner: " + this.lowerLeftCorner);
+	}
+}
 // Esempio elemento da restituire
 //{"avgTravelTime":9.4185001373291,"sdTravelTime":0.0,"numVehicles":1,"aggPeriod":179000,"domainAggTimestamp":1536186598000,"aggTimestamp":1626183204071,"linkid":"12500009324848","areaName":"Albigny-sur-Saone"}
 
@@ -185,6 +212,20 @@ class RequestEncoder implements Encoder.Text<AreaRequest>{
     public void destroy() {    }
 
 }
+class RequestedSquareEncoder implements Encoder.Text<RequestedSquare>{
+	private static Gson gson = new Gson();
+
+	@Override
+    public String encode(RequestedSquare square) throws EncodeException {
+        return gson.toJson(square);
+    }
+
+    @Override
+    public void init(EndpointConfig config) {    }
+
+    @Override
+    public void destroy() {    }
+}
 
 //DECODER
 class MessageDecoder implements Decoder.Text<Message>{
@@ -194,10 +235,13 @@ class MessageDecoder implements Decoder.Text<Message>{
     public Message decode(String s) throws DecodeException {
 
         if(willDecode(s)) {
-            if (s.contains("type")) {
+            if (s.contains("geojson")) {
                 System.out.println("Decodifica effettuata.");
                 return gson.fromJson(s, AreaRequest.class);
-            } else if (!s.contains("type")) {
+            } else if (s.contains("RequestedSquare")){
+				 System.out.println("Decodifica effettuata.");
+		         return gson.fromJson(s, RequestedSquare.class);
+			}else if (!s.contains("type")) {
                 System.out.println("Decodifica effettuata.");
                 return gson.fromJson(s, Street.class);
             }
