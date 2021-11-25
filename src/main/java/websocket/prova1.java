@@ -12,8 +12,9 @@ import java.util.concurrent.CopyOnWriteArraySet;
 //per richiedere questo servizio serve specificare 'ws:' nell'url al posto del protocollo
 @ServerEndpoint(
         value = "/prova1",
-        decoders = MessageDecoder.class,
-        encoders = MessageEncoder.class)
+        decoders = {MessageDecoder.class},
+        encoders = {StreetEncoder.class, RequestEncoder.class}
+)
 
 public class prova1 {
 
@@ -27,17 +28,30 @@ public class prova1 {
         if(session != null){
             session.getBasicRemote().sendText("Connessione Accettata!");
 		}
-        //analizza la richiesta
-        //recupera i dati
-        //crea un thread che invia i dati
+        //Si accerta che la connessione sia stabilita
+        // Registra il client in un Set
     }
     @OnMessage
     public void onMessage(Session session, Message message)throws IOException {
-		System.out.println("Messaggio: "+message);
-        message.print(System.out);
-        if(message != null)
-            session.getBasicRemote().sendText("Oggetto ricevuto con successo!");
+		if(message instanceof Street) {
+            System.out.println("Messaggio: " + message);
+            Street street = (Street) message;
+            street.print(System.out);
+            if (message != null)
+                session.getBasicRemote().sendText("Oggetto ricevuto con successo!");
+            if (street != null)
+                session.getBasicRemote().sendText("Oggetto castato con successo!");
+        }else if (message instanceof AreaRequest){
+            System.out.println("Messaggio: " + message);
+            AreaRequest request = (AreaRequest) message;
+            request.print(System.out);
+            if(message != null)
+                session.getBasicRemote().sendText("Oggetto ricevuto con successo!");
+            if (request != null)
+                session.getBasicRemote().sendText("Oggetto castato con successo!");
+        }
    }
+
     @OnClose
     public void onClose(Session session)throws IOException{
         //gestisce la chiusura della connessione
@@ -45,7 +59,7 @@ public class prova1 {
     }
     @OnError
     public void onError(Session session, Throwable throwable)throws IOException{
-        //gestione eccezioni
+        throwable.printStackTrace(System.out);
     }
     //si usa per inviare i dati, questo e' costruito per una chat, percio' bisogna capire se deve essere modificato per questa applicazione
     private static void broadcast(Message message)throws IOException, EncodeException{//
@@ -61,8 +75,16 @@ public class prova1 {
     }
 }
 
-//Classe che rappresenta gli oggetti Json restituiti da questo endpoint
-class Message {
+//Classi che rappresentano gli oggetti Json gestiti da questo endpoint
+class Message{
+    private String type;
+
+    public Message(){}
+
+    public void setType(String type){this.type=type;}
+    public String getType(){return this.type;}
+}
+class Street extends Message{
     private double avgTravelTime;
     private double sdTravelTime;
     private long numVehicles;
@@ -72,7 +94,7 @@ class Message {
     private String linkid;
     private String areaName;
 
-    public Message(){}
+    public Street(){}
 
     public void setAvgTravelTime(double avgTravelTime) {this.avgTravelTime = avgTravelTime;}
     public void setSdTravelTime(double sdTravelTime) {this.sdTravelTime = sdTravelTime;}
@@ -81,7 +103,7 @@ class Message {
     public void setDomainAggTimestamp(long domainAggTimestamp) {this.domainAggTimestamp = domainAggTimestamp;}
     public void setAggTimestamp(long aggTimestamp) {this.aggTimestamp = aggTimestamp;}
     public void setLinkid(String linkid) {this.linkid = linkid;}
-    public void setAreaName(String areaName) {this.areaName = areaName;}
+    public void setAname(String areaName) {this.areaName = areaName;}
 
     public double getAvgTravelTime() {return this.avgTravelTime;}
     public double getSdTravelTime() {return this.sdTravelTime;}
@@ -90,7 +112,7 @@ class Message {
     public long getDomainAggTimestamp() {return this.domainAggTimestamp;}
     public long getAggTimestamp() {return this.aggTimestamp;}
     public String getLinkid() {return this.linkid;}
-    public String getAreaName() {return this.areaName;}
+    public String getAname() {return this.areaName;}
 
     public void print(PrintStream ps){
         ps.println(     "\nLinkid: "+this.linkid
@@ -103,16 +125,42 @@ class Message {
                         +"\nAggTimestamp: "+this.aggTimestamp);
     }
 }
+class AreaRequest extends Message{
+    private String areaname;
+    private int zoom;
+    private int decimateSkip;
+
+    public AreaRequest(){}
+
+    public void setAname(String areaName){this.areaname=areaName;}
+    //public void setType(String type){this.type=type;}
+    public void setZoom(int zoom){this.zoom=zoom;}
+    public void setDecimateSkip(int decimateSkip){this.decimateSkip=decimateSkip;}
+
+    public String getAname(){return this.areaname;}
+    //public String getType(){return this.type;}
+    public int getZoom(){return this.zoom;}
+    public int getDecimateSkip(){return this.decimateSkip;}
+
+    public void print(PrintStream ps){
+        String temp = super.getType();
+        ps.println(">REQUEST FROM CLIENT"
+                +"\nAreaName: "+this.areaname
+                +"\nZoom: "+this.zoom
+                +"\nType: "+temp
+                +"\nDecimateSkip: "+this.decimateSkip);
+    }
+}
 // Esempio elemento da restituire
 //{"avgTravelTime":9.4185001373291,"sdTravelTime":0.0,"numVehicles":1,"aggPeriod":179000,"domainAggTimestamp":1536186598000,"aggTimestamp":1626183204071,"linkid":"12500009324848","areaName":"Albigny-sur-Saone"}
 
-class MessageEncoder implements Encoder.Text<Message>{
+//ENCODERS
+class StreetEncoder implements Encoder.Text<Street>{
     private static Gson gson = new Gson();
 
     @Override
-    public String encode(Message object) throws EncodeException {
-		System.out.println("Codifica effettuata.");
-        return gson.toJson(object);
+    public String encode(Street street) throws EncodeException {
+            return gson.toJson(street);
     }
 
     @Override
@@ -122,18 +170,12 @@ class MessageEncoder implements Encoder.Text<Message>{
     public void destroy() {    }
 
 }
-class MessageDecoder implements Decoder.Text<Message>{
+class RequestEncoder implements Encoder.Text<AreaRequest>{
     private static Gson gson = new Gson();
 
     @Override
-    public Message decode(String s) throws DecodeException {
-		System.out.println("Decodifica effettuata.");
-        return gson.fromJson(s, Message.class);
-    }
-
-    @Override
-    public boolean willDecode(String s) {
-        return (s != null);
+    public String encode(AreaRequest request) throws EncodeException {
+        return gson.toJson(request);
     }
 
     @Override
@@ -142,4 +184,33 @@ class MessageDecoder implements Decoder.Text<Message>{
     @Override
     public void destroy() {    }
 
+}
+
+//DECODER
+class MessageDecoder implements Decoder.Text<Message>{
+    private static Gson gson = new Gson();
+
+    @Override
+    public Message decode(String s) throws DecodeException {
+
+        if(willDecode(s)) {
+            if (s.contains("type")) {
+                System.out.println("Decodifica effettuata.");
+                return gson.fromJson(s, AreaRequest.class);
+            } else if (!s.contains("type")) {
+                System.out.println("Decodifica effettuata.");
+                return gson.fromJson(s, Street.class);
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public boolean willDecode(String s) {return (s != null);}
+
+    @Override
+    public void init(EndpointConfig config) {    }
+
+    @Override
+    public void destroy() {    }
 }
