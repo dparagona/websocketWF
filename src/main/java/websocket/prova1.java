@@ -174,8 +174,9 @@ class RequestedSquare extends Message{
 	public void print(PrintStream ps){
 		String temp = super.getType();
 		ps.println(">>SQUARE FROM CLIENT"
-				+"\nUpper Left Corner: " + this.upperLeftCorner
-				+"\nLower Right Corner: " + this.lowerLeftCorner);
+				+"\nType: "+temp
+				+"\nUpper Left Corner: "+this.upperLeftCorner
+				+"\nLower Right Corner: "+this.lowerRightCorner);
 	}
 }
 // Esempio elemento da restituire
@@ -238,7 +239,7 @@ class MessageDecoder implements Decoder.Text<Message>{
             if (s.contains("geojson")) {
                 System.out.println("Decodifica effettuata.");
                 return gson.fromJson(s, AreaRequest.class);
-            } else if (s.contains("RequestedSquare")){
+            } else if (s.coontains("RequestedSquare")){
 				 System.out.println("Decodifica effettuata.");
 		         return gson.fromJson(s, RequestedSquare.class);
 			}else if (!s.contains("type")) {
