@@ -242,7 +242,7 @@ class MessageDecoder implements Decoder.Text<Message>{
             } else if (s.contains("RequestedSquare")){
 				 System.out.println("Decodifica effettuata.");
 		         return gson.fromJson(s, RequestedSquare.class);
-			}else if (!s.contains("type")) {
+			}else if (!s.contains("RequestedSquare") && !s.contains("geojson")) {
                 System.out.println("Decodifica effettuata.");
                 return gson.fromJson(s, Street.class);
             } 
