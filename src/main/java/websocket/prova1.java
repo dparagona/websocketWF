@@ -1,11 +1,13 @@
 package websocket;
 
 import com.google.gson.Gson;
+import logic.areaName.AreaNameLogic;
 
 import javax.websocket.*;
 import javax.websocket.server.*;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
@@ -20,6 +22,8 @@ public class prova1 {
 
     private Session session;
     private static Set<prova1> provaEndpoints = new CopyOnWriteArraySet<>();
+    private RequestedSquare square;
+    private AreaNameLogic areaNameLogic = new AreaNameLogic(); //serve per ottenere le aree interne ad un riquadro
 
     @OnOpen
     public void onOpen(Session session)throws IOException {
@@ -27,6 +31,7 @@ public class prova1 {
         provaEndpoints.add(this);
         if(session != null){
             session.getBasicRemote().sendText("Connessione Accettata!");
+            provaEndpoints.add(this);
 		}
         //Si accerta che la connessione sia stabilita
         // Registra il client in un Set
@@ -52,11 +57,32 @@ public class prova1 {
         }else if (message instanceof RequestedSquare){
 			System.out.println("Messaggio: " + message);
             RequestedSquare square = (RequestedSquare) message;
-            square.print(System.out);
-            if(message != null)
+            if(message != null && square != null) {
                 session.getBasicRemote().sendText("Oggetto ricevuto con successo!");
-            if (square != null)
                 session.getBasicRemote().sendText("Oggetto castato con successo!");
+                //qui bisogna controllare se il riquadro ricevuto e' diverso da quello gia' in possesso di questo Endpoint
+                this.square = square;//per ora faccio così', poi bisogna vedere se c'e' bisogno di controllare che il nuovo quadrato richiesto non sia diverso dal precedente
+                this.square.print(System.out);
+
+                ArrayList<String> areaNames = getAreaNames(this.square);//ottiene l'array delle aree da Mongo
+                //stampa nella console delle aree ottenute da Mongo per debug
+                int i=0;
+                for(String s : areaNames){
+                    i++;
+                    System.out.println("Area #"+i+": "+s);
+                }
+
+                //ora bisogna sottoscrivere un consumer a tutti i topic corrispondenti alle stringhe presenti in areaNames
+                //devo recuperare i dati di Kafka (nome host, porta, ecc ecc)
+            }
+            else{
+                //never reached
+                session.getBasicRemote().sendText("Messaggio o Richiesta non ricevute con successo.");
+            }
+            //qui bisogna usare un'interazione con Mongo per ottenere i nommi delle aree all'interno del riquadro DONE
+            //ottenuto cio', si può creare un Consumer per i vari topic corrispondenti alle aree ottenute
+            //per poi inviare al client i JSON corrispondenti alle strade prelevati da Neo4J grazie ai nomi delle aree
+            //ottenuti, per infine filtrare le strade in base a quelle che ricadono nel riquadro
 		}
    }
 
@@ -80,6 +106,14 @@ public class prova1 {
                    }
                }
         });
+    }
+
+    private ArrayList<String> getAreaNames(RequestedSquare s){
+        float lon1 = Float.parseFloat(s.getUpperLeftCorner().substring(0, s.getUpperLeftCorner().indexOf(",")+1));
+        float len1 = Float.parseFloat(s.getUpperLeftCorner().substring(s.getUpperLeftCorner().indexOf(",")+1));
+        float lon2 = Float.parseFloat(s.getLowerRightCorner().substring(0, s.getLowerRightCorner().indexOf(",")+1));
+        float len2 = Float.parseFloat(s.getLowerRightCorner().substring(s.getLowerRightCorner().indexOf(",")+1));
+        return areaNameLogic.getAreaNameFromCorners(lon1, len1, lon2, len2);
     }
 }
 
