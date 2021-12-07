@@ -61,7 +61,7 @@ public class prova1 {
                 session.getBasicRemote().sendText("Oggetto ricevuto con successo!");
                 session.getBasicRemote().sendText("Oggetto castato con successo!");
                 //qui bisogna controllare se il riquadro ricevuto e' diverso da quello gia' in possesso di questo Endpoint
-                this.square = square;//per ora faccio così', poi bisogna vedere se c'e' bisogno di controllare che il nuovo quadrato richiesto non sia diverso dal precedente
+                this.square = square;//per ora faccio cosi', poi bisogna vedere se c'e' bisogno di controllare che il nuovo quadrato richiesto non sia diverso dal precedente
                 this.square.print(System.out);
 
                 ArrayList<String> areaNames = getAreaNames(this.square);//ottiene l'array delle aree da Mongo
@@ -80,7 +80,7 @@ public class prova1 {
                 session.getBasicRemote().sendText("Messaggio o Richiesta non ricevute con successo.");
             }
             //qui bisogna usare un'interazione con Mongo per ottenere i nommi delle aree all'interno del riquadro DONE
-            //ottenuto cio', si può creare un Consumer per i vari topic corrispondenti alle aree ottenute
+            //ottenuto cio', si puo' creare un Consumer per i vari topic corrispondenti alle aree ottenute
             //per poi inviare al client i JSON corrispondenti alle strade prelevati da Neo4J grazie ai nomi delle aree
             //ottenuti, per infine filtrare le strade in base a quelle che ricadono nel riquadro
 		}
