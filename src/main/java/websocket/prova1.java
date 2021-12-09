@@ -2,12 +2,19 @@ package websocket;
 
 import com.google.gson.Gson;
 import logic.areaName.AreaNameLogic;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.serialization.StringDeserializer;
 
 import javax.websocket.*;
 import javax.websocket.server.*;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
@@ -23,7 +30,7 @@ public class prova1 {
     private Session session;
     private static Set<prova1> provaEndpoints = new CopyOnWriteArraySet<>();
     private RequestedSquare square;
-    private AreaNameLogic areaNameLogic = new AreaNameLogic(); //serve per ottenere le aree interne ad un riquadro
+    private final AreaNameLogic areaNameLogic = new AreaNameLogic(); //serve per ottenere le aree interne ad un riquadro
 
     @OnOpen
     public void onOpen(Session session)throws IOException {
@@ -61,7 +68,7 @@ public class prova1 {
                 session.getBasicRemote().sendText("Oggetto ricevuto con successo!");
                 session.getBasicRemote().sendText("Oggetto castato con successo!");
                 //qui bisogna controllare se il riquadro ricevuto e' diverso da quello gia' in possesso di questo Endpoint
-                this.square = square;//per ora faccio cosi', poi bisogna vedere se c'e' bisogno di controllare che il nuovo quadrato richiesto non sia diverso dal precedente
+                this.square = square;//per ora faccio così', poi bisogna vedere se c'e' bisogno di controllare che il nuovo quadrato richiesto non sia diverso dal precedente
                 this.square.print(System.out);
 
                 ArrayList<String> areaNames = getAreaNames(this.square);//ottiene l'array delle aree da Mongo
@@ -71,16 +78,15 @@ public class prova1 {
                     i++;
                     System.out.println("Area #"+i+": "+s);
                 }
-
                 //ora bisogna sottoscrivere un consumer a tutti i topic corrispondenti alle stringhe presenti in areaNames
-                //devo recuperare i dati di Kafka (nome host, porta, ecc ecc)
+                getStreetsTraffic(areaNames);
             }
             else{
                 //never reached
                 session.getBasicRemote().sendText("Messaggio o Richiesta non ricevute con successo.");
             }
             //qui bisogna usare un'interazione con Mongo per ottenere i nommi delle aree all'interno del riquadro DONE
-            //ottenuto cio', si puo' creare un Consumer per i vari topic corrispondenti alle aree ottenute
+            //ottenuto cio', si può creare un Consumer per i vari topic corrispondenti alle aree ottenute
             //per poi inviare al client i JSON corrispondenti alle strade prelevati da Neo4J grazie ai nomi delle aree
             //ottenuti, per infine filtrare le strade in base a quelle che ricadono nel riquadro
 		}
@@ -114,6 +120,38 @@ public class prova1 {
         float lon2 = Float.parseFloat(s.getLowerRightCorner().substring(0, s.getLowerRightCorner().indexOf(",")));
         float len2 = Float.parseFloat(s.getLowerRightCorner().substring(s.getLowerRightCorner().indexOf(",")+1));
         return areaNameLogic.getAreaNameFromCorners(lon1, len1, lon2, len2);
+    }
+    private String getStreetsTraffic(ArrayList<String> areaNames){
+        Properties props = new Properties();
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, KafkaConfig.KAFKA_HOST_URL);//KafkaConfig-->classe che contiene le info del kafka che uso
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "areasConsumerGroup");
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        //props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest"); //solo se necessaria, implica molti messaggi aggiuntivi
+
+        KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);//#1: KEY, #2: VALUE
+        consumer.subscribe(areaNames);
+
+        while(session.isOpen()){//variante dagli appunti, potrebbe non andare bene
+            ConsumerRecords<String, String> streetResults = consumer.poll(Duration.ofMillis(100));
+            int i=0;
+            for(ConsumerRecord<String, String> record: streetResults){
+                i++;
+                String key = record.key();
+                String value = record.value();
+                String topic = record.topic();
+                int partition = record.partition();
+                long offset = record.offset();
+                //qui si elabora il messaggio
+                System.out.println("RECORD#1: "+
+                        "\n KEY: "+key+
+                        "\n VALUE: "+value+
+                        "\n TOPIC: "+topic+
+                        "\n PARTITION: "+partition+
+                        "\n OFFSET: "+offset);//stampa delle strade ottenute da Kafka per debug
+            }
+        }
+        return null;
     }
 }
 
@@ -292,4 +330,10 @@ class MessageDecoder implements Decoder.Text<Message>{
 
     @Override
     public void destroy() {    }
+}
+//Utility
+class KafkaConfig{
+    public final static String KAFKA_HOST_URL = "http://kafka-cp-control-center-promenade.router.default.svc.cluster.local";
+    public final static String KAFKA_HOST_LOCAL_NAME = "kafka-cp-control-center.promenade.svc";
+    public final static String KAFKA_PORT = "9021";
 }
