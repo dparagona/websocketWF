@@ -335,5 +335,5 @@ class MessageDecoder implements Decoder.Text<Message>{
 class KafkaConfig{
     public final static String KAFKA_HOST_URL = "http://kafka-cp-control-center-promenade.router.default.svc.cluster.local";
     public final static String KAFKA_HOST_LOCAL_NAME = "kafka-cp-kafka.promenade.svc";
-    public final static String KAFKA_PORT = "9021";
+    public final static String KAFKA_PORT = "9092";
 }
