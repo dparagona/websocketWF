@@ -76,7 +76,6 @@ public class prova1 {
                 int i=0;
                 for(String s : areaNames){
                     i++;
-                    //s.concat("-Northbound");
                     System.out.println("Area #"+i+": "+s);
                 }
                 //ora bisogna sottoscrivere un consumer a tutti i topic corrispondenti alle stringhe presenti in areaNames
@@ -132,8 +131,8 @@ public class prova1 {
 
         KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);//#1: KEY, #2: VALUE
         consumer.subscribe(areaNames);
-
-        while(session.isOpen()){//variante dagli appunti, potrebbe non andare bene
+        int j=0;
+        while(j<2){//variante dagli appunti, potrebbe non andare bene
             ConsumerRecords<String, String> streetResults = consumer.poll(Duration.ofMillis(100));
             int i=0;
             for(ConsumerRecord<String, String> record: streetResults){
@@ -151,6 +150,7 @@ public class prova1 {
                         "\n PARTITION: "+partition+
                         "\n OFFSET: "+offset);//stampa delle strade ottenute da Kafka per debug
             }
+            j++;
         }
         return null;
     }
