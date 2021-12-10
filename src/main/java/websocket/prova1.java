@@ -135,7 +135,7 @@ public class prova1 {
         int j=1;
         while(j<3){//variante dagli appunti, potrebbe non andare bene
 			System.out.println("While eseguito "+j+" volte.");
-            ConsumerRecords<String, String> streetResults = consumer.poll(Duration.ofMillis(100));
+            ConsumerRecords<String, String> streetResults = consumer.poll(Duration.ofMillis(1000));
             int i=0;
             for(ConsumerRecord<String, String> record: streetResults){
                 i++;
