@@ -129,14 +129,17 @@ public class prova1 {
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest"); //solo se necessaria, implica molti messaggi aggiuntivi
 
+		System.out.println("Creazione del consumer");
         KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);//#1: KEY, #2: VALUE
         consumer.subscribe(areaNames);
         int j=0;
         while(j<2){//variante dagli appunti, potrebbe non andare bene
+			System.out.println("While eseguito "+j+1+" volte.");
             ConsumerRecords<String, String> streetResults = consumer.poll(Duration.ofMillis(100));
             int i=0;
             for(ConsumerRecord<String, String> record: streetResults){
                 i++;
+				System.out.println("For eseguito "+i+" volte.");
                 String key = record.key();
                 String value = record.value();
                 String topic = record.topic();
