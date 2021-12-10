@@ -31,7 +31,7 @@ public class prova1 {
     private static Set<prova1> provaEndpoints = new CopyOnWriteArraySet<>();
     private RequestedSquare square;
     private final AreaNameLogic areaNameLogic = new AreaNameLogic(); //serve per ottenere le aree interne ad un riquadro
-
+    private ArrayList<String> streets = new ArrayList<>();
     @OnOpen
     public void onOpen(Session session)throws IOException {
         this.session = session;
@@ -121,25 +121,24 @@ public class prova1 {
         float len2 = Float.parseFloat(s.getLowerRightCorner().substring(s.getLowerRightCorner().indexOf(",")+1));
         return areaNameLogic.getAreaNameFromCorners(lon1, len1, lon2, len2);
     }
-    private String getStreetsTraffic(ArrayList<String> areaNames){
+    private void getStreetsTraffic(ArrayList<String> areaNames){
         Properties props = new Properties();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, KafkaConfig.KAFKA_HOST_LOCAL_NAME+":"+KafkaConfig.KAFKA_PORT);//KafkaConfig-->classe che contiene le info del kafka che uso
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "areasConsumerGroup");
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest"); //solo se necessaria, implica molti messaggi aggiuntivi
-
-		System.out.println("Creazione del consumer");
+        System.out.println("Creo il consumer");
         KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);//#1: KEY, #2: VALUE
         consumer.subscribe(areaNames);
 
         while(true){//variante dagli appunti, potrebbe non andare bene
-			System.out.println("While eseguito");
-            ConsumerRecords<String, String> streetResults = consumer.poll(Duration.ofMillis(1000));
+            System.out.println("While eseguito");
+            ConsumerRecords<String, String> streetResults = consumer.poll(Duration.ofMillis(100));
             int i=0;
             for(ConsumerRecord<String, String> record: streetResults){
                 i++;
-				System.out.println("For eseguito "+i+" volte.");
+                System.out.println("For eseguito "+i+" volte.");
                 String key = record.key();
                 String value = record.value();
                 String topic = record.topic();
@@ -152,10 +151,10 @@ public class prova1 {
                         "\n TOPIC: "+topic+
                         "\n PARTITION: "+partition+
                         "\n OFFSET: "+offset);//stampa delle strade ottenute da Kafka per debug
+                streets.add(value);
             }
-            j++;
+
         }
-        return null;
     }
 }
 
