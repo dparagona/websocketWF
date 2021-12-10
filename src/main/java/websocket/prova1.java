@@ -74,9 +74,13 @@ public class prova1 {
                 ArrayList<String> areaNames = getAreaNames(this.square);//ottiene l'array delle aree da Mongo
                 //stampa nella console delle aree ottenute da Mongo per debug
                 int i=0;
+                for(String s: areaNames){
+                    areaNames.remove(s);
+                    areaNames.add(s.concat("-Northbound"));
+                }
                 for(String s : areaNames){
                     i++;
-                    s.concat("-Northbound");//modifica dati raffinati
+                    //s.concat("-Northbound");
                     System.out.println("Area #"+i+": "+s);
                 }
                 //ora bisogna sottoscrivere un consumer a tutti i topic corrispondenti alle stringhe presenti in areaNames
@@ -128,7 +132,7 @@ public class prova1 {
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "areasConsumerGroup");
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest"); //solo se necessaria, implica molti messaggi aggiuntivi
+        //props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest"); //solo se necessaria, implica molti messaggi aggiuntivi
 
         KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);//#1: KEY, #2: VALUE
         consumer.subscribe(areaNames);
