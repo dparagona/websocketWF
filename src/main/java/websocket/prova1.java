@@ -76,7 +76,7 @@ public class prova1 {
                 int i=0;
                 for(String s : areaNames){
                     i++;
-                    s.concat("-Northbound");
+                    s.concat("-Northbound");//modifica dati raffinati
                     System.out.println("Area #"+i+": "+s);
                 }
                 //ora bisogna sottoscrivere un consumer a tutti i topic corrispondenti alle stringhe presenti in areaNames
