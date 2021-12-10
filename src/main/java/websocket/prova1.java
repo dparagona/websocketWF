@@ -74,10 +74,6 @@ public class prova1 {
                 ArrayList<String> areaNames = getAreaNames(this.square);//ottiene l'array delle aree da Mongo
                 //stampa nella console delle aree ottenute da Mongo per debug
                 int i=0;
-                for(String s: areaNames){
-                    areaNames.remove(s);
-                    areaNames.add(s.concat("-Northbound"));
-                }
                 for(String s : areaNames){
                     i++;
                     //s.concat("-Northbound");
