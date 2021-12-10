@@ -132,9 +132,9 @@ public class prova1 {
 		System.out.println("Creazione del consumer");
         KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);//#1: KEY, #2: VALUE
         consumer.subscribe(areaNames);
-        int j=0;
-        while(j<2){//variante dagli appunti, potrebbe non andare bene
-			System.out.println("While eseguito "+j+1+" volte.");
+        int j=1;
+        while(j<3){//variante dagli appunti, potrebbe non andare bene
+			System.out.println("While eseguito "+j+" volte.");
             ConsumerRecords<String, String> streetResults = consumer.poll(Duration.ofMillis(100));
             int i=0;
             for(ConsumerRecord<String, String> record: streetResults){
