@@ -123,7 +123,7 @@ public class prova1 {
     }
     private String getStreetsTraffic(ArrayList<String> areaNames){
         Properties props = new Properties();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, KafkaConfig.KAFKA_HOST_LOCAL_NAME);//KafkaConfig-->classe che contiene le info del kafka che uso
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, KafkaConfig.KAFKA_HOST_LOCAL_NAME+":"+KafkaConfig.KAFKA_PORT);//KafkaConfig-->classe che contiene le info del kafka che uso
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "areasConsumerGroup");
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
@@ -335,5 +335,5 @@ class MessageDecoder implements Decoder.Text<Message>{
 class KafkaConfig{
     public final static String KAFKA_HOST_URL = "http://kafka-cp-control-center-promenade.router.default.svc.cluster.local";
     public final static String KAFKA_HOST_LOCAL_NAME = "kafka-cp-kafka.promenade.svc";
-    public final static String KAFKA_PORT = "9021";
+    public final static String KAFKA_PORT = "9092";
 }
