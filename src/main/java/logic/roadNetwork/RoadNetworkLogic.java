@@ -14,7 +14,9 @@ import java.util.ArrayList;
 
 @Stateless
 public class RoadNetworkLogic implements RoadNetworkLogicLocal {
+
     ConfigurationSingleton conf = ConfigurationSingleton.getInstance();
+
     private static final Logger logger = LoggerFactory.getLogger(RoadNetworkLogic.class);
     Neo4jDAOImpl database;
 

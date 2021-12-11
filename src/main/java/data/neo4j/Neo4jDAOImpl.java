@@ -67,6 +67,7 @@ public class Neo4jDAOImpl {
         this.writeSessionConfig = SessionConfig.builder()
                 .withDefaultAccessMode(AccessMode.WRITE)
                 .build();
+        logger.info("Created: " + this);
     }
 
     public void openConnection() {
@@ -385,4 +386,12 @@ public class Neo4jDAOImpl {
         return new Street(coordinates, linkId, from, to, length, speedlimit, areaname, name, weight, ffs, frc, netClass, routeNumber, fow);
     }
 
+    @Override
+    public String toString() {
+        return "Neo4jDAOImpl{" +
+                "uri='" + uri + '\'' +
+                ", user='" + user + '\'' +
+                ", password='" + password + '\'' +
+                '}';
+    }
 }

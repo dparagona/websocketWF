@@ -1,7 +1,5 @@
 package logic.areaName;
 
-import data.model.Street;
-
 import javax.ejb.Local;
 import java.util.ArrayList;
 

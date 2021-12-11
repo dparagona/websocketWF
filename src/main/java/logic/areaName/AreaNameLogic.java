@@ -24,7 +24,7 @@ public class AreaNameLogic implements AreaNameLogicLocal {
     public ArrayList<String> getAreaNameFromCorners(float upperLeftLon, float upperLeftLat, float lowerRightLon, float lowerRightLat) {
 
 
-        ArrayList<Position> positions = new ArrayList<Position>();
+        ArrayList<Position> positions = new ArrayList<>();
         positions.add(new Position(upperLeftLon, upperLeftLat));
         positions.add(new Position(lowerRightLon, upperLeftLat));
         positions.add(new Position(lowerRightLon, lowerRightLat));
@@ -34,7 +34,7 @@ public class AreaNameLogic implements AreaNameLogicLocal {
         Polygon polygon = new Polygon(positions);
 
         FindIterable<Area> result = connectionManager.getCollection(null, Area.class).find(Filters.geoIntersects("polygon", polygon));
-        ArrayList<String> areaNames = new ArrayList<String>();
+        ArrayList<String> areaNames = new ArrayList<>();
 
         for (Area a : result)
             areaNames.add(a.getNom_com()+"-Northbound");//l'ho modificato io, prima non c'era la concatenazione
