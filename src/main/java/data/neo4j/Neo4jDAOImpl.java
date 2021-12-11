@@ -38,8 +38,6 @@ class StreetFieldsNeo4j {
     public static final String NETCLASS = "netClass";
     public static final String ROUTENUMBER = "routeNumber";
     public static final String FOW = "fow";
-
-
 }
 
 public class Neo4jDAOImpl {

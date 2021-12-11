@@ -19,7 +19,7 @@ public class ConfigurationSingleton {
 
         properties = new Properties();
         try {
-        File file = new File("/home/colarusso/Documents/GitRepository/Promenade/promenadeAreaNameService/conf.properties");
+        File file = new File("/home/colarusso/Documents/GitRepository/paragona/websocketWF/conf.properties");
             if (!file.exists()) {
                 file = new File("/opt/app-root/src/conf.properties");
             }
