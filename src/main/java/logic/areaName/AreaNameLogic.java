@@ -37,7 +37,7 @@ public class AreaNameLogic implements AreaNameLogicLocal {
         ArrayList<String> areaNames = new ArrayList<>();
 
         for (Area a : result)
-            areaNames.add(a.getNom_com()+"-Northbound");//l'ho modificato io, prima non c'era la concatenazione
+            areaNames.add(a.getNom_com());
 
         return areaNames;
     }
