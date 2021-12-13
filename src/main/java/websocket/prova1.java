@@ -45,6 +45,7 @@ public class prova1 {
     }
     @OnMessage
     public void onMessage(Session session, Message message)throws IOException {
+        session.getBasicRemote().sendText("Messaggio Ricevuto!");
 		if(message instanceof Street) {
             System.out.println("Messaggio: " + message);
             Street street = (Street) message;
@@ -74,6 +75,9 @@ public class prova1 {
                 ArrayList<String> areaNames = getAreaNames(this.square);//ottiene l'array delle aree da Mongo
                 //stampa nella console delle aree ottenute da Mongo per debug
                 int i=0;
+                System.out.println(">>AREE RICEVUTE");
+                System.out.println(" ");
+
                 for(String s : areaNames){
                     i++;
                     System.out.println("Area #"+i+": "+s);
@@ -145,7 +149,7 @@ public class prova1 {
                 int partition = record.partition();
                 long offset = record.offset();
                 //qui si elabora il messaggio
-                System.out.println("RECORD#1: "+
+                System.out.println("RECORD#"+i+": "+
                         "\n KEY: "+key+
                         "\n VALUE: "+value+
                         "\n TOPIC: "+topic+
