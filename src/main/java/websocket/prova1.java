@@ -38,7 +38,6 @@ public class prova1 {
     private ArrayList<StreetMongo> streetsFromArea = new ArrayList<>(); //array di strade presenti nelle aree richieste, provenienti da mongo
     private ArrayList<Street> streetsWithGeometry = new ArrayList<>();  //array di strade contenenti un array che ne definisce la geometria, provenienti da Neo4J
     private Boolean flag1 = false;//non sono ancora del tutto sicuro che la gestione di questa flag funzioni correttamente
-    Gson gson = new Gson();
     @OnOpen
     public void onOpen(Session session)throws IOException {
         this.session = session;
@@ -94,15 +93,12 @@ public class prova1 {
                 }
                 getStreetsTraffic(areaNames);//preleva i dati da kafka
                 //dovrebbe chiedere i dati a neo4j
-                System.out.println("Convertento i valori in oggetti...");
-                for(String s : valuesFromArea){
-                    gson.fromJson(s, StreetMongo.class).print(System.out);
-                    streetsFromArea.add(gson.fromJson(s, StreetMongo.class));
-                }
+
                 System.out.println("Recuperando i dati da Neo4j....");
-                for(StreetMongo s : streetsFromArea){
-                    streetsWithGeometry.add(roadNetworkLogic.getStreet(Long.parseLong(s.getLinkid())));
-                }
+                //for(StreetMongo s : streetsFromArea){
+                  //  streetsWithGeometry.add(roadNetworkLogic.getStreet(Long.parseLong(s.getLinkid())));
+               // }
+                System.out.println("Risultato da neo4j: "+roadNetworkLogic.getStreet(Long.parseLong(streetsFromArea.get(1).getLinkid())));
                 System.out.println("Nomi delle strade ricevute: ");
                 for(Street s: streetsWithGeometry){
                     System.out.println(s.getName());//stampo il nome delle strade ottenute da neo4j per debug
@@ -159,6 +155,7 @@ public class prova1 {
         System.out.println("Creo il consumer");
         KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);//#1: KEY, #2: VALUE
         consumer.subscribe(areaNames);
+        Gson gson = new Gson();
 
         while(flag1){//usa una variabile booleana che viene settata a false ogni volta che un nuovo messaggio viene ricevuto
             System.out.println("While eseguito");
@@ -175,8 +172,7 @@ public class prova1 {
                 //qui si elabora il messaggio
                 //System.out.println("RECORD#"+i+": "+ "\n KEY: "+key+ "\n VALUE: "+value+ "\n TOPIC: "+topic+ "\n PARTITION: "+partition+ "\n OFFSET: "+offset);//stampa delle strade ottenute da Kafka per debug
                 //System.out.println("VALUE: "+value);
-                //streetsFromArea.add(gson.fromJson(value, StreetMongo.class));
-                valuesFromArea.add(value);
+                streetsFromArea.add(gson.fromJson(value, StreetMongo.class));
             }
             if(i != 0) {//se i!=0 l'array ha elementi, quindi esco dal while
                 flag1 = false;
