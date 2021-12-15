@@ -101,6 +101,7 @@ public class prova1 {
                 Long id = Long.parseLong(streetsFromArea.get(1).getLinkid());
                 System.out.println(id);
                 System.out.println("Risultato da neo4j: "+roadNetworkLogic.getStreet(id));
+                
                 System.out.println("Nomi delle strade ricevute: ");
                 for(Street s: streetsWithGeometry){
                     System.out.println(s.getName());//stampo il nome delle strade ottenute da neo4j per debug
