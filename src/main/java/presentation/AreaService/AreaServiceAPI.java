@@ -11,7 +11,7 @@ public interface AreaServiceAPI {
     @GET
     @Path("/areas")
     public Response getAreaNameFromCorners(
-    		@QueryParam("upperLeft") String upperLeft,
+            @QueryParam("upperLeft") String upperLeft,
             @QueryParam("lowerRight") String lowerRight
     );
 
@@ -19,6 +19,11 @@ public interface AreaServiceAPI {
     @Path("/streets")
     public Response searchStreets(@QueryParam("areaname") String areaname,
                                   @QueryParam("zoom") int zoom,
-                                  @DefaultValue ("street") @QueryParam("type") String type,
+                                  @DefaultValue("street") @QueryParam("type") String type,
                                   @DefaultValue("0") @QueryParam("decimateSkip") int decimateSkip);
+
+    @GET
+    @Path("/streets/{linkId}")
+    public Response getStreet(@PathParam("linkId") long linkId);
+
 }
