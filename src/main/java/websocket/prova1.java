@@ -34,9 +34,11 @@ public class prova1 {
     private static Set<prova1> provaEndpoints = new CopyOnWriteArraySet<>();
     private RequestedSquare square;
     private final AreaNameLogic areaNameLogic = new AreaNameLogic(); //serve per ottenere le aree interne ad un riquadro
+    private ArrayList<String> valuesFromArea = new ArrayList<>();//array contenente i valori restituiti da kafka
     private ArrayList<StreetMongo> streetsFromArea = new ArrayList<>(); //array di strade presenti nelle aree richieste, provenienti da mongo
     private ArrayList<Street> streetsWithGeometry = new ArrayList<>();  //array di strade contenenti un array che ne definisce la geometria, provenienti da Neo4J
     private Boolean flag1 = false;//non sono ancora del tutto sicuro che la gestione di questa flag funzioni correttamente
+    Gson gson = new Gson();
     @OnOpen
     public void onOpen(Session session)throws IOException {
         this.session = session;
@@ -92,9 +94,15 @@ public class prova1 {
                 }
                 getStreetsTraffic(areaNames);//preleva i dati da kafka
                 //dovrebbe chiedere i dati a neo4j
+                System.out.println("Convertento i valori in oggetti...");
+                for(String s : valuesFromArea){
+                    streetsFromArea.add(gson.fromJson(s, StreetMongo.class));
+                }
+                System.out.println("Recuperando i dati da Neo4j....");
                 for(StreetMongo s : streetsFromArea){
                     streetsWithGeometry.add(roadNetworkLogic.getStreet(Long.parseLong(s.getLinkid())));
                 }
+                System.out.println("Nomi delle strade ricevute: ");
                 for(Street s: streetsWithGeometry){
                     System.out.println(s.getName());//stampo il nome delle strade ottenute da neo4j per debug
                 }
@@ -141,7 +149,6 @@ public class prova1 {
     }
     private void getStreetsTraffic(ArrayList<String> areaNames){
         Properties props = new Properties();
-        Gson gson = new Gson();
 
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, KafkaConfig.KAFKA_HOST_LOCAL_NAME+":"+KafkaConfig.KAFKA_PORT);//KafkaConfig-->classe che contiene le info del kafka che uso
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "areasConsumerGroup");
@@ -166,8 +173,9 @@ public class prova1 {
                 //long offset = record.offset();
                 //qui si elabora il messaggio
                 //System.out.println("RECORD#"+i+": "+ "\n KEY: "+key+ "\n VALUE: "+value+ "\n TOPIC: "+topic+ "\n PARTITION: "+partition+ "\n OFFSET: "+offset);//stampa delle strade ottenute da Kafka per debug
-                System.out.println("VALUE: "+value);
-                streetsFromArea.add(gson.fromJson(value, StreetMongo.class));
+                //System.out.println("VALUE: "+value);
+                //streetsFromArea.add(gson.fromJson(value, StreetMongo.class));
+                valuesFromArea.add(value);
             }
             if(i != 0) {//se i!=0 l'array ha elementi, quindi esco dal while
                 flag1 = false;
