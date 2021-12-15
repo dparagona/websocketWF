@@ -51,6 +51,11 @@ public class AreaService implements AreaServiceAPI {
         return MyResposeBuilder.createResponse(Response.Status.OK, roadNetworkLogic.getStreetFromArea(areaname, zoom, 0));
     }
 
+    @Override
+    public Response getStreet(long linkId) {
+        return MyResposeBuilder.createResponse(Response.Status.OK, roadNetworkLogic.getStreet(linkId));
+    }
+
 
     public FeatureCollection convertStreetsToFeatureCollection(ArrayList<Street> streets) {
         FeatureCollection featureCollection = new FeatureCollection();
