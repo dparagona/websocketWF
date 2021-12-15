@@ -93,8 +93,7 @@ public class prova1 {
                 getStreetsTraffic(areaNames);//preleva i dati da kafka
                 //dovrebbe chiedere i dati a neo4j
                 for(StreetMongo s : streetsFromArea){
-                    System.out.println(roadNetworkLogic.getStreet(Long.parseLong(s.getLinkid())).getName());
-                    //streetsWithGeometry.add(roadNetworkLogic.getStreet(Long.parseLong(s.getLinkid())));
+                    streetsWithGeometry.add(roadNetworkLogic.getStreet(Long.parseLong(s.getLinkid())));
                 }
                 for(Street s: streetsWithGeometry){
                     System.out.println(s.getName());//stampo il nome delle strade ottenute da neo4j per debug
@@ -167,6 +166,7 @@ public class prova1 {
                 //long offset = record.offset();
                 //qui si elabora il messaggio
                 //System.out.println("RECORD#"+i+": "+ "\n KEY: "+key+ "\n VALUE: "+value+ "\n TOPIC: "+topic+ "\n PARTITION: "+partition+ "\n OFFSET: "+offset);//stampa delle strade ottenute da Kafka per debug
+                System.out.println("VALUE: "+value);
                 streetsFromArea.add(gson.fromJson(value, StreetMongo.class));
             }
             if(i != 0) {//se i!=0 l'array ha elementi, quindi esco dal while
