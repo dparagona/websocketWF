@@ -10,6 +10,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 
+import javax.ejb.EJB;
 import javax.websocket.*;
 import javax.websocket.server.*;
 import java.io.IOException;
@@ -30,6 +31,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 public class prova1 {
 
     private Session session;
+    @EJB
     private RoadNetworkLogicLocal roadNetworkLogic;
     private static Set<prova1> provaEndpoints = new CopyOnWriteArraySet<>();
     private RequestedSquare square;
