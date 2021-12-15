@@ -93,7 +93,8 @@ public class prova1 {
                 getStreetsTraffic(areaNames);//preleva i dati da kafka
                 //dovrebbe chiedere i dati a neo4j
                 for(StreetMongo s : streetsFromArea){
-                    streetsWithGeometry.add(roadNetworkLogic.getStreet(Long.parseLong(s.getLinkid())));
+                    System.out.println(roadNetworkLogic.getStreet(Long.parseLong(s.getLinkid())).getName());
+                    //streetsWithGeometry.add(roadNetworkLogic.getStreet(Long.parseLong(s.getLinkid())));
                 }
                 for(Street s: streetsWithGeometry){
                     System.out.println(s.getName());//stampo il nome delle strade ottenute da neo4j per debug
