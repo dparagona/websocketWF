@@ -68,4 +68,9 @@ public class RoadNetworkLogic implements RoadNetworkLogicLocal {
 
         return streets;
     }
+
+    @Override
+    public Street getStreet(long id) {
+        return database.getStreet(id);
+    }
 }

@@ -1,7 +1,9 @@
 package websocket;
 
 import com.google.gson.Gson;
+import data.model.Street;
 import logic.areaName.AreaNameLogic;
+import logic.roadNetwork.RoadNetworkLogicLocal;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -28,10 +30,13 @@ import java.util.concurrent.CopyOnWriteArraySet;
 public class prova1 {
 
     private Session session;
+    private RoadNetworkLogicLocal roadNetworkLogic;
     private static Set<prova1> provaEndpoints = new CopyOnWriteArraySet<>();
     private RequestedSquare square;
     private final AreaNameLogic areaNameLogic = new AreaNameLogic(); //serve per ottenere le aree interne ad un riquadro
-    private ArrayList<String> streets = new ArrayList<>();
+    private ArrayList<StreetMongo> streetsFromArea = new ArrayList<>(); //array di strade presenti nelle aree richieste, provenienti da mongo
+    private ArrayList<Street> streetsWithGeometry = new ArrayList<>();  //array di strade contenenti un array che ne definisce la geometria, provenienti da Neo4J
+    private Boolean flag1 = false;//non sono ancora del tutto sicuro che la gestione di questa flag funzioni correttamente
     @OnOpen
     public void onOpen(Session session)throws IOException {
         this.session = session;
@@ -45,10 +50,13 @@ public class prova1 {
     }
     @OnMessage
     public void onMessage(Session session, Message message)throws IOException {
+        flag1 = true;
         session.getBasicRemote().sendText("Messaggio Ricevuto!");
-		if(message instanceof Street) {
+        System.out.println("flag1 modificata a TRUE");
+
+		if(message instanceof StreetMongo) {
             System.out.println("Messaggio: " + message);
-            Street street = (Street) message;
+            StreetMongo street = (StreetMongo) message;
             street.print(System.out);
             if (message != null)
                 session.getBasicRemote().sendText("Oggetto ricevuto con successo!");
@@ -82,8 +90,14 @@ public class prova1 {
                     i++;
                     System.out.println("Area #"+i+": "+s);
                 }
-                //ora bisogna sottoscrivere un consumer a tutti i topic corrispondenti alle stringhe presenti in areaNames
-                getStreetsTraffic(areaNames);
+                getStreetsTraffic(areaNames);//preleva i dati da kafka
+                //dovrebbe chiedere i dati a neo4j
+                for(StreetMongo s : streetsFromArea){
+                    streetsWithGeometry.add(roadNetworkLogic.getStreet(Long.parseLong(s.getLinkid())));
+                }
+                for(Street s: streetsWithGeometry){
+                    System.out.println(s.getName());//stampo il nome delle strade ottenute da neo4j per debug
+                }
             }
             else{
                 //never reached
@@ -127,6 +141,8 @@ public class prova1 {
     }
     private void getStreetsTraffic(ArrayList<String> areaNames){
         Properties props = new Properties();
+        Gson gson = new Gson();
+
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, KafkaConfig.KAFKA_HOST_LOCAL_NAME+":"+KafkaConfig.KAFKA_PORT);//KafkaConfig-->classe che contiene le info del kafka che uso
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "areasConsumerGroup");
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
@@ -136,28 +152,26 @@ public class prova1 {
         KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);//#1: KEY, #2: VALUE
         consumer.subscribe(areaNames);
 
-        while(true){//variante dagli appunti, potrebbe non andare bene
+        while(flag1){//usa una variabile booleana che viene settata a false ogni volta che un nuovo messaggio viene ricevuto
             System.out.println("While eseguito");
             ConsumerRecords<String, String> streetResults = consumer.poll(Duration.ofMillis(10000));
             int i=0;
             for(ConsumerRecord<String, String> record: streetResults){
                 i++;
                 System.out.println("For eseguito "+i+" volte.");
-                String key = record.key();
+                //String key = record.key(); //mi restituisce sempre null
                 String value = record.value();
-                String topic = record.topic();
-                int partition = record.partition();
-                long offset = record.offset();
+                //String topic = record.topic();
+                //int partition = record.partition();
+                //long offset = record.offset();
                 //qui si elabora il messaggio
-                System.out.println("RECORD#"+i+": "+
-                        "\n KEY: "+key+
-                        "\n VALUE: "+value+
-                        "\n TOPIC: "+topic+
-                        "\n PARTITION: "+partition+
-                        "\n OFFSET: "+offset);//stampa delle strade ottenute da Kafka per debug
-                streets.add(value);
+                //System.out.println("RECORD#"+i+": "+ "\n KEY: "+key+ "\n VALUE: "+value+ "\n TOPIC: "+topic+ "\n PARTITION: "+partition+ "\n OFFSET: "+offset);//stampa delle strade ottenute da Kafka per debug
+                streetsFromArea.add(gson.fromJson(value, StreetMongo.class));
             }
-
+            if(i != 0) {//se i!=0 l'array ha elementi, quindi esco dal while
+                flag1 = false;
+                System.out.println("flag1 modificato a FALSE");
+            }
         }
     }
 }
@@ -171,7 +185,7 @@ class Message{
     public void setType(String type){this.type=type;}
     public String getType(){return this.type;}
 }
-class Street extends Message{
+class StreetMongo extends Message{
     private double avgTravelTime;
     private double sdTravelTime;
     private long numVehicles;
@@ -181,7 +195,7 @@ class Street extends Message{
     private String linkid;
     private String areaName;
 
-    public Street(){}
+    public StreetMongo(){}
 
     public void setAvgTravelTime(double avgTravelTime) {this.avgTravelTime = avgTravelTime;}
     public void setSdTravelTime(double sdTravelTime) {this.sdTravelTime = sdTravelTime;}
@@ -262,11 +276,11 @@ class RequestedSquare extends Message{
 //{"avgTravelTime":9.4185001373291,"sdTravelTime":0.0,"numVehicles":1,"aggPeriod":179000,"domainAggTimestamp":1536186598000,"aggTimestamp":1626183204071,"linkid":"12500009324848","areaName":"Albigny-sur-Saone"}
 
 //ENCODERS
-class StreetEncoder implements Encoder.Text<Street>{
+class StreetEncoder implements Encoder.Text<StreetMongo>{
     private static Gson gson = new Gson();
 
     @Override
-    public String encode(Street street) throws EncodeException {
+    public String encode(StreetMongo street) throws EncodeException {
             return gson.toJson(street);
     }
 
@@ -323,7 +337,7 @@ class MessageDecoder implements Decoder.Text<Message>{
 		         return gson.fromJson(s, RequestedSquare.class);
 			}else if (!s.contains("RequestedSquare") && !s.contains("geojson")) {
                 System.out.println("Decodifica effettuata.");
-                return gson.fromJson(s, Street.class);
+                return gson.fromJson(s, StreetMongo.class);
             } 
         }
         return null;
