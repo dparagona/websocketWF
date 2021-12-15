@@ -2,6 +2,7 @@ package websocket;
 
 import com.google.gson.Gson;
 import data.model.Street;
+import data.neo4j.Neo4jDAOImpl;
 import logic.areaName.AreaNameLogic;
 import logic.roadNetwork.RoadNetworkLogicLocal;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -9,6 +10,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
+import util.ConfigurationSingleton;
 
 import javax.ejb.EJB;
 import javax.websocket.*;
@@ -31,8 +33,8 @@ import java.util.concurrent.CopyOnWriteArraySet;
 public class prova1 {
 
     private Session session;
-    @EJB
-    private RoadNetworkLogicLocal roadNetworkLogic;
+    private ConfigurationSingleton conf = ConfigurationSingleton.getInstance();
+    private Neo4jDAOImpl database;
     private static Set<prova1> provaEndpoints = new CopyOnWriteArraySet<>();
     private RequestedSquare square;
     private final AreaNameLogic areaNameLogic = new AreaNameLogic(); //serve per ottenere le aree interne ad un riquadro
@@ -43,6 +45,10 @@ public class prova1 {
     @OnOpen
     public void onOpen(Session session)throws IOException {
         this.session = session;
+        String uri = conf.getProperty("neo4j-core.bolt-uri");
+        String user = conf.getProperty("neo4j-core.user");
+        String password = conf.getProperty("neo4j-core.password");
+        database = new Neo4jDAOImpl(uri, user, password);
         provaEndpoints.add(this);
         if(session != null){
             session.getBasicRemote().sendText("Connessione Accettata!");
@@ -102,7 +108,7 @@ public class prova1 {
                // }
                 Long id = Long.parseLong(streetsFromArea.get(1).getLinkid());
                 System.out.println(id);
-                System.out.println("Risultato da neo4j: "+roadNetworkLogic.getStreet(id));
+                System.out.println("Risultato da neo4j: " + database.getStreet(id));
                 System.out.println("Nomi delle strade ricevute: ");
                 for(Street s: streetsWithGeometry){
                     System.out.println(s.getName());//stampo il nome delle strade ottenute da neo4j per debug
@@ -140,6 +146,7 @@ public class prova1 {
                }
         });
     }
+
 
     private ArrayList<String> getAreaNames(RequestedSquare s){
         float lon1 = Float.parseFloat(s.getUpperLeftCorner().substring(0, s.getUpperLeftCorner().indexOf(",")));
