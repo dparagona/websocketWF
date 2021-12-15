@@ -49,6 +49,7 @@ public class prova1 {
         String user = conf.getProperty("neo4j-core.user");
         String password = conf.getProperty("neo4j-core.password");
         database = new Neo4jDAOImpl(uri, user, password);
+        database.openConnection();
         provaEndpoints.add(this);
         if(session != null){
             session.getBasicRemote().sendText("Connessione Accettata!");
@@ -174,7 +175,7 @@ public class prova1 {
             int i=0;
             for(ConsumerRecord<String, String> record: streetResults){
                 i++;
-                System.out.println("For eseguito "+i+" volte.");
+//                System.out.println("For eseguito "+i+" volte.");
                 //String key = record.key(); //mi restituisce sempre null
                 String value = record.value();
                 //String topic = record.topic();
