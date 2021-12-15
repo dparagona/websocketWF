@@ -96,6 +96,7 @@ public class prova1 {
                 //dovrebbe chiedere i dati a neo4j
                 System.out.println("Convertento i valori in oggetti...");
                 for(String s : valuesFromArea){
+                    gson.fromJson(s, StreetMongo.class).print(System.out);
                     streetsFromArea.add(gson.fromJson(s, StreetMongo.class));
                 }
                 System.out.println("Recuperando i dati da Neo4j....");
