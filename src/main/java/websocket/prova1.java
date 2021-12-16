@@ -106,6 +106,7 @@ public class prova1 {
                 //System.out.println(id);
                 //System.out.println("Risultato da neo4j: " + database.getStreet(id));
                 for(StreetMongo s: streetsFromArea){
+
                     streetsWithGeometry.add(database.getStreet(Long.parseLong(s.getLinkid())));
                 }
                 System.out.println("Nomi delle strade ricevute: ");
@@ -130,6 +131,7 @@ public class prova1 {
     @OnClose
     public void onClose(Session session)throws IOException{
         //gestisce la chiusura della connessione
+        flag1 = false;
         provaEndpoints.remove(this);
     }
     @OnError
@@ -175,8 +177,8 @@ public class prova1 {
             int i=0;
             for(ConsumerRecord<String, String> record: streetResults){
                 i++;
-//                System.out.println("For eseguito "+i+" volte.");
-                //String key = record.key(); //mi restituisce sempre null
+                System.out.println("For eseguito "+i+" volte.");
+                String key = record.key(); //mi restituisce sempre null
                 String value = record.value();
                 //String topic = record.topic();
                 //int partition = record.partition();
