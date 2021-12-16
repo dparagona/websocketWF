@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import data.model.Street;
 import data.neo4j.Neo4jDAOImpl;
 import logic.areaName.AreaNameLogic;
-import logic.roadNetwork.RoadNetworkLogicLocal;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -12,7 +11,6 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import util.ConfigurationSingleton;
 
-import javax.ejb.EJB;
 import javax.websocket.*;
 import javax.websocket.server.*;
 import java.io.IOException;
@@ -104,16 +102,19 @@ public class prova1 {
                 //dovrebbe chiedere i dati a neo4j
 
                 System.out.println("Recuperando i dati da Neo4j....");
-                //for(StreetMongo s : streetsFromArea){
-                  //  streetsWithGeometry.add(roadNetworkLogic.getStreet(Long.parseLong(s.getLinkid())));
-               // }
-                Long id = Long.parseLong(streetsFromArea.get(1).getLinkid());
-                System.out.println(id);
-                System.out.println("Risultato da neo4j: " + database.getStreet(id));
+                //Long id = Long.parseLong(streetsFromArea.get(1).getLinkid());
+                //System.out.println(id);
+                //System.out.println("Risultato da neo4j: " + database.getStreet(id));
+                for(StreetMongo s: streetsFromArea){
+                    streetsWithGeometry.add(database.getStreet(Long.parseLong(s.getLinkid())));
+                }
                 System.out.println("Nomi delle strade ricevute: ");
                 for(Street s: streetsWithGeometry){
                     System.out.println(s.getName());//stampo il nome delle strade ottenute da neo4j per debug
                 }
+                Gson gson = new Gson();
+                String toClient = gson.toJson(streetsWithGeometry);
+                session.getBasicRemote().sendText(toClient);
             }
             else{
                 //never reached
@@ -147,7 +148,6 @@ public class prova1 {
                }
         });
     }
-
 
     private ArrayList<String> getAreaNames(RequestedSquare s){
         float lon1 = Float.parseFloat(s.getUpperLeftCorner().substring(0, s.getUpperLeftCorner().indexOf(",")));
