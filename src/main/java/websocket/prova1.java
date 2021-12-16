@@ -105,8 +105,13 @@ public class prova1 {
                 //Long id = Long.parseLong(streetsFromArea.get(1).getLinkid());
                 //System.out.println(id);
                 //System.out.println("Risultato da neo4j: " + database.getStreet(id));
+                i=0;
                 for(StreetMongo s: streetsFromArea){
-                    streetsWithGeometry.add(database.getStreet(Long.parseLong(s.getLinkid())));
+                    i++;
+                    Long localId = Long.parseLong(s.getLinkid());
+                    Street neo4jResult = database.getStreet(localId);
+                    System.out.println("Risultato #"+i+": "+neo4jResult);
+                    streetsWithGeometry.add(neo4jResult);
                 }
                 System.out.println("Nomi delle strade ricevute: ");
                 for(Street s: streetsWithGeometry){
