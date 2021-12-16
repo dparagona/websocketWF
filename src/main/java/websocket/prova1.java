@@ -176,8 +176,8 @@ public class prova1 {
             int i=0;
             for(ConsumerRecord<String, String> record: streetResults){
                 i++;
-                System.out.println("For eseguito "+i+" volte.");
-                String key = record.key(); //mi restituisce sempre null
+                //System.out.println("For eseguito "+i+" volte.");
+                //String key = record.key(); //mi restituisce sempre null
                 String value = record.value();
                 //String topic = record.topic();
                 //int partition = record.partition();
@@ -189,7 +189,7 @@ public class prova1 {
             }
             if(i != 0) {//se i!=0 l'array ha elementi, quindi esco dal while
                 flag1 = false;
-                System.out.println("flag1 modificato a FALSE");
+                System.out.println("Dati prelevati da Kafka e flag1 modificato a FALSE");
             }
         }
     }
