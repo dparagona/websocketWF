@@ -111,19 +111,20 @@ public class prova1 {
                     Long localId = Long.parseLong(s.getLinkid());
                     try {
                         Street neo4jResult = database.getStreet(localId);
-                        System.out.println("Risultato #" + i + ": " + neo4jResult);
+                        //System.out.println("Risultato #" + i + ": " + neo4jResult);
                         streetsWithGeometry.add(neo4jResult);
                     }catch(org.neo4j.driver.exceptions.NoSuchRecordException e){
                         System.out.println("Valore non trovato");
                     }
                 }
-                System.out.println("Nomi delle strade ricevute: ");
-                for(Street s: streetsWithGeometry){
-                    System.out.println(s.getName());//stampo il nome delle strade ottenute da neo4j per debug
-                }
+                //System.out.println("Nomi delle strade ricevute: ");
+                //for(Street s: streetsWithGeometry){
+                //    System.out.println(s.getName());//stampo il nome delle strade ottenute da neo4j per debug
+                //}
                 Gson gson = new Gson();
                 String toClient = gson.toJson(streetsWithGeometry);
                 session.getBasicRemote().sendText(toClient);
+                System.out.println("JSON inviato al client");
             }
             else{
                 //never reached
