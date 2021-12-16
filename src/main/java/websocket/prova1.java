@@ -106,7 +106,6 @@ public class prova1 {
                 //System.out.println(id);
                 //System.out.println("Risultato da neo4j: " + database.getStreet(id));
                 for(StreetMongo s: streetsFromArea){
-
                     streetsWithGeometry.add(database.getStreet(Long.parseLong(s.getLinkid())));
                 }
                 System.out.println("Nomi delle strade ricevute: ");
