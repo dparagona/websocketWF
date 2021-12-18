@@ -1,9 +1,14 @@
 package websocket;
 
 import com.google.gson.Gson;
+import data.model.Coordinate;
 import data.model.Street;
 import data.neo4j.Neo4jDAOImpl;
 import logic.areaName.AreaNameLogic;
+import mil.nga.sf.geojson.Feature;
+import mil.nga.sf.geojson.FeatureCollection;
+import mil.nga.sf.geojson.LineString;
+import mil.nga.sf.geojson.Position;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -16,9 +21,7 @@ import javax.websocket.server.*;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 //per richiedere questo servizio serve specificare 'ws:' nell'url al posto del protocollo
@@ -122,18 +125,16 @@ public class prova1 {
                 //    System.out.println(s.getName());//stampo il nome delle strade ottenute da neo4j per debug
                 //}
                 Gson gson = new Gson();
-                String toClient = gson.toJson(streetsWithGeometry);
-                session.getBasicRemote().sendText(toClient);
-                System.out.println("JSON inviato al client");
+                if(!streetsWithGeometry.isEmpty()){
+                    String toClient = gson.toJson(convertStreetsToFeatureCollection(streetsWithGeometry));
+                    session.getBasicRemote().sendText(toClient);
+                    System.out.println("JSON inviato al client");
+                }
             }
             else{
                 //never reached
                 session.getBasicRemote().sendText("Messaggio o Richiesta non ricevute con successo.");
             }
-            //qui bisogna usare un'interazione con Mongo per ottenere i nommi delle aree all'interno del riquadro DONE
-            //ottenuto cio', si puo' creare un Consumer per i vari topic corrispondenti alle aree ottenute
-            //per poi inviare al client i JSON corrispondenti alle strade prelevati da Neo4J grazie ai nomi delle aree
-            //ottenuti, per infine filtrare le strade in base a quelle che ricadono nel riquadro
 		}
    }
 
@@ -202,6 +203,29 @@ public class prova1 {
                 System.out.println("Dati prelevati da Kafka e flag1 modificato a FALSE");
             }
         }
+    }
+    public FeatureCollection convertStreetsToFeatureCollection(ArrayList<Street> streets) {
+        FeatureCollection featureCollection = new FeatureCollection();
+        for (Street s : streets) {
+            ArrayList<Position> positions = new ArrayList<>();
+            for (Coordinate c : s.getGeometry()) {
+                Position p = new Position(c.getLongitude(), c.getLatitude());
+                positions.add(p);
+            }
+            Map<String, Object> properties = new HashMap<>();
+            properties.put("name", s.getName());
+            if(s.getFfs()>20)
+                properties.put("color", "#1199dd");
+            else{
+                properties.put("color", "#d21f1b");
+            }
+//            properties.put("color", "#fc0040");
+
+            Feature feature = new Feature(new LineString(positions));
+            feature.setProperties(properties);
+            featureCollection.addFeature(feature);
+        }
+        return featureCollection;
     }
 }
 
