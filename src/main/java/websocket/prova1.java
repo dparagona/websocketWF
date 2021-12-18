@@ -1,6 +1,7 @@
 package websocket;
 
 import com.google.gson.Gson;
+import data.model.Coordinate;
 import data.model.Street;
 import data.neo4j.Neo4jDAOImpl;
 import logic.areaName.AreaNameLogic;
@@ -117,13 +118,18 @@ public class prova1 {
                 FeatureCollection featureCollection = new FeatureCollection();
                 for(Street s: streetsWithGeometry){
                     Properties props = new Properties();
+                    Geometry geoms = new Geometry();
+                    ArrayList<Coordinate> coord = s.getGeometry();
+                    for(Coordinate c: coord){
+                        geoms.addGeometry(c.getLongitude(), c.getLatitude());
+                    }
                     props.put("name", s.getName());
                     if(s.getFfs()>20)
                         props.put("color", "#1199dd");
                     else{
                         props.put("color", "#d21f1b");
                     }
-                    Feature feature = new Feature(new Geometry(s.getGeometry()),props);
+                    Feature feature = new Feature(geoms,props);
                     if(!feature.isEmpty())
                         featureCollection.addFeature(feature);
                 }
@@ -415,9 +421,15 @@ class Feature {
 }
 class Geometry {
     private String type = "LineString";
-    private ArrayList<data.model.Coordinate> coordinates;
+    private ArrayList<ArrayList<Double>> coordinates = new ArrayList<>();
     public Geometry(){}
-    public Geometry(ArrayList<data.model.Coordinate> c){
+    public Geometry(ArrayList<ArrayList<Double>> c){
         this.coordinates = c;
+    }
+    public void addGeometry(Double lon, Double lat){
+        ArrayList<Double> coordinata = new ArrayList<>();
+        coordinata.add(lon);
+        coordinata.add(lat);
+        coordinates.add(coordinata);
     }
 }
