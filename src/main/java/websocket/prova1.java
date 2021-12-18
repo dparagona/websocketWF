@@ -1,14 +1,9 @@
 package websocket;
 
 import com.google.gson.Gson;
-import data.model.Coordinate;
 import data.model.Street;
 import data.neo4j.Neo4jDAOImpl;
 import logic.areaName.AreaNameLogic;
-import mil.nga.sf.geojson.Feature;
-import mil.nga.sf.geojson.FeatureCollection;
-import mil.nga.sf.geojson.LineString;
-import mil.nga.sf.geojson.Position;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -39,10 +34,9 @@ public class prova1 {
     private static Set<prova1> provaEndpoints = new CopyOnWriteArraySet<>();
     private RequestedSquare square;
     private final AreaNameLogic areaNameLogic = new AreaNameLogic(); //serve per ottenere le aree interne ad un riquadro
-    private ArrayList<String> valuesFromArea = new ArrayList<>();//array contenente i valori restituiti da kafka
     private ArrayList<StreetMongo> streetsFromArea = new ArrayList<>(); //array di strade presenti nelle aree richieste, provenienti da mongo
     private ArrayList<Street> streetsWithGeometry = new ArrayList<>();  //array di strade contenenti un array che ne definisce la geometria, provenienti da Neo4J
-    private Boolean flag1 = false;//non sono ancora del tutto sicuro che la gestione di questa flag funzioni correttamente
+    private Boolean flag1 = false;
     @OnOpen
     public void onOpen(Session session)throws IOException {
         this.session = session;
@@ -56,8 +50,7 @@ public class prova1 {
             session.getBasicRemote().sendText("Connessione Accettata!");
             provaEndpoints.add(this);
 		}
-        //Si accerta che la connessione sia stabilita
-        // Registra il client in un Set
+        // Registra la sessione in un Set
     }
     @OnMessage
     public void onMessage(Session session, Message message)throws IOException {
@@ -120,15 +113,20 @@ public class prova1 {
                         System.out.println("Valore non trovato");
                     }
                 }
-                //System.out.println("Nomi delle strade ricevute: ");
-                //for(Street s: streetsWithGeometry){
-                //    System.out.println(s.getName());//stampo il nome delle strade ottenute da neo4j per debug
-                //}
+                System.out.println("Conversione dati in formato geojson...");
+                for(Street s: streetsWithGeometry){
+
+                }
                 Gson gson = new Gson();
                 if(!streetsWithGeometry.isEmpty()){
-                    String toClient = gson.toJson(convertStreetsToFeatureCollection(streetsWithGeometry));
-                    session.getBasicRemote().sendText(toClient);
-                    System.out.println("JSON inviato al client");
+                    //String toClient = gson.toJson(/*oggetto Features contenente le strade*/));
+                    //session.getBasicRemote().sendText(toClient);
+                    //System.out.println("JSON inviato al client");
+                    Properties props = new Properties();
+                    props.put("name", "Davide");
+                    props.put("color", "RGB_Green");
+                    System.out.println("PROPERTY JSON"+gson.toJson(props));
+                    //java.util.Properties
                 }
             }
             else{
@@ -203,29 +201,6 @@ public class prova1 {
                 System.out.println("Dati prelevati da Kafka e flag1 modificato a FALSE");
             }
         }
-    }
-    public FeatureCollection convertStreetsToFeatureCollection(ArrayList<Street> streets) {
-        FeatureCollection featureCollection = new FeatureCollection();
-        for (Street s : streets) {
-            ArrayList<Position> positions = new ArrayList<>();
-            for (Coordinate c : s.getGeometry()) {
-                Position p = new Position(c.getLongitude(), c.getLatitude());
-                positions.add(p);
-            }
-            Map<String, Object> properties = new HashMap<>();
-            properties.put("name", s.getName());
-            if(s.getFfs()>20)
-                properties.put("color", "#1199dd");
-            else{
-                properties.put("color", "#d21f1b");
-            }
-//            properties.put("color", "#fc0040");
-
-            Feature feature = new Feature(new LineString(positions));
-            feature.setProperties(properties);
-            featureCollection.addFeature(feature);
-        }
-        return featureCollection;
     }
 }
 
@@ -410,3 +385,17 @@ class KafkaConfig{
     public final static String KAFKA_HOST_LOCAL_NAME = "kafka.promenade-lyon";
     public final static String KAFKA_PORT = "9092";
 }
+class FeatureCollection {
+    private String type ="FeatureCollection";
+    private ArrayList<Feature> features;
+}
+class Feature {
+    private String type = "Feature";
+    private ArrayList<Geometry> geometry;
+}
+class Geometry {
+    private String type;
+    private ArrayList<ArrayList<Double>> coordinates;
+    private Properties properties;
+}
+//class Properties { private String name;private String color;}
