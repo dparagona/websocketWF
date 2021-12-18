@@ -124,7 +124,8 @@ public class prova1 {
                         props.put("color", "#d21f1b");
                     }
                     Feature feature = new Feature(new Geometry(s.getGeometry()),props);
-                    featureCollection.addFeature(feature);
+                    if(!feature.isEmpty())
+                        featureCollection.addFeature(feature);
                 }
                 Gson gson = new Gson();
                 if(!streetsWithGeometry.isEmpty()){
@@ -406,6 +407,10 @@ class Feature {
     public Feature(Geometry g, Properties p){
         this.geometry = g;
         this.properties = p;
+    }
+    public Boolean isEmpty(){
+        if(geometry==null && properties == null) return true;
+        else return false;
     }
 }
 class Geometry {
