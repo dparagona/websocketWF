@@ -114,19 +114,23 @@ public class prova1 {
                     }
                 }
                 System.out.println("Conversione dati in formato geojson...");
+                FeatureCollection featureCollection = new FeatureCollection();
                 for(Street s: streetsWithGeometry){
-
+                    Properties props = new Properties();
+                    props.put("name", s.getName());
+                    if(s.getFfs()>20)
+                        props.put("color", "#1199dd");
+                    else{
+                        props.put("color", "#d21f1b");
+                    }
+                    Feature feature = new Feature(new Geometry(s.getGeometry()),props);
+                    featureCollection.addFeature(feature);
                 }
                 Gson gson = new Gson();
                 if(!streetsWithGeometry.isEmpty()){
-                    //String toClient = gson.toJson(/*oggetto Features contenente le strade*/));
-                    //session.getBasicRemote().sendText(toClient);
-                    //System.out.println("JSON inviato al client");
-                    Properties props = new Properties();
-                    props.put("name", "Davide");
-                    props.put("color", "RGB_Green");
-                    System.out.println("PROPERTY JSON"+gson.toJson(props));
-                    //java.util.Properties
+                    String toClient = gson.toJson(featureCollection);
+                    session.getBasicRemote().sendText(toClient);
+                    System.out.println("JSON inviato al client");
                 }
             }
             else{
@@ -388,14 +392,26 @@ class KafkaConfig{
 class FeatureCollection {
     private String type ="FeatureCollection";
     private ArrayList<Feature> features;
+    public FeatureCollection(){}
+    public void addFeature(Feature f){
+        features.add(f);
+    }
 }
 class Feature {
     private String type = "Feature";
-    private ArrayList<Geometry> geometry;
+    private Geometry geometry;
+    private Properties properties;//va bene la classe fornita da java.util
+    public Feature(){}
+    public Feature(Geometry g, Properties p){
+        this.geometry = g;
+        this.properties = p;
+    }
 }
 class Geometry {
-    private String type;
-    private ArrayList<ArrayList<Double>> coordinates;
-    private Properties properties;
+    private String type = "LineString";
+    private ArrayList<data.model.Coordinate> coordinates;
+    public Geometry(){}
+    public Geometry(ArrayList<data.model.Coordinate> c){
+        this.coordinates = c;
+    }
 }
-//class Properties { private String name;private String color;}
