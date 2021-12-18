@@ -129,6 +129,7 @@ public class prova1 {
                 Gson gson = new Gson();
                 if(!streetsWithGeometry.isEmpty()){
                     String toClient = gson.toJson(featureCollection);
+                    System.out.println(toClient);
                     session.getBasicRemote().sendText(toClient);
                     System.out.println("JSON inviato al client");
                 }
