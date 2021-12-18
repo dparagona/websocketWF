@@ -393,7 +393,7 @@ class KafkaConfig{
 }
 class FeatureCollection {
     private String type ="FeatureCollection";
-    private ArrayList<Feature> features;
+    private ArrayList<Feature> features = new ArrayList<>();
     public FeatureCollection(){}
     public void addFeature(Feature f){
         features.add(f);
