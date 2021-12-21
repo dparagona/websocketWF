@@ -63,87 +63,76 @@ public class prova1 {
             System.out.println("Messaggio: " + message);
             StreetMongo street = (StreetMongo) message;
             street.print(System.out);
-            if (message != null)
-                session.getBasicRemote().sendText("Oggetto ricevuto con successo!");
-            if (street != null)
-                session.getBasicRemote().sendText("Oggetto castato con successo!");
+            session.getBasicRemote().sendText("Oggetto ricevuto con successo!");
         }else if (message instanceof AreaRequest){
             System.out.println("Messaggio: " + message);
             AreaRequest request = (AreaRequest) message;
             request.print(System.out);
-            if(message != null)
-                session.getBasicRemote().sendText("Oggetto ricevuto con successo!");
-            if (request != null)
-                session.getBasicRemote().sendText("Oggetto castato con successo!");
+            session.getBasicRemote().sendText("Oggetto ricevuto con successo!");
+
         }else if (message instanceof RequestedSquare){
 			System.out.println("Messaggio: " + message);
             RequestedSquare square = (RequestedSquare) message;
-            if(message != null && square != null) {
-                session.getBasicRemote().sendText("Oggetto ricevuto con successo!");
-                session.getBasicRemote().sendText("Oggetto castato con successo!");
-                //qui bisogna controllare se il riquadro ricevuto e' diverso da quello gia' in possesso di questo Endpoint
-                this.square = square;//per ora faccio cosi', poi bisogna vedere se c'e' bisogno di controllare che il nuovo quadrato richiesto non sia diverso dal precedente
-                this.square.print(System.out);
 
-                ArrayList<String> areaNames = getAreaNames(this.square);//ottiene l'array delle aree da Mongo
-                //stampa nella console delle aree ottenute da Mongo per debug
-                int i=0;
-                System.out.println(">>AREE RICEVUTE");
-                System.out.println(" ");
+            session.getBasicRemote().sendText("Oggetto ricevuto con successo!");
+            //qui bisogna controllare se il riquadro ricevuto e' diverso da quello gia' in possesso di questo Endpoint
+            this.square = square;//per ora faccio cosi', poi bisogna vedere se c'e' bisogno di controllare che il nuovo quadrato richiesto non sia diverso dal precedente
+            this.square.print(System.out);
 
-                for(String s : areaNames){
-                    i++;
-                    System.out.println("Area #"+i+": "+s);
-                }
-                getStreetsTraffic(areaNames);//preleva i dati da kafka
-                //dovrebbe chiedere i dati a neo4j
+            ArrayList<String> areaNames = getAreaNames(this.square);//ottiene l'array delle aree da Mongo
+            //stampa nella console delle aree ottenute da Mongo per debug
+            int i=0;
+            System.out.println(">>AREE RICEVUTE");
+            System.out.println(" ");
 
-                System.out.println("Recuperando i dati da Neo4j....");
-                //Long id = Long.parseLong(streetsFromArea.get(1).getLinkid());
-                //System.out.println(id);
-                //System.out.println("Risultato da neo4j: " + database.getStreet(id));
-                i=0;
-                for(StreetMongo s: streetsFromArea){
-                    i++;
-                    Long localId = Long.parseLong(s.getLinkid());
-                    try {
-                        Street neo4jResult = database.getStreet(localId);
-                        //System.out.println("Risultato #" + i + ": " + neo4jResult);
-                        streetsWithGeometry.add(neo4jResult);
-                    }catch(org.neo4j.driver.exceptions.NoSuchRecordException e){
-                        System.out.println("Valore non trovato");
-                    }
-                }
-                System.out.println("Conversione dati in formato geojson...");
-                FeatureCollection featureCollection = new FeatureCollection();
-                for(Street s: streetsWithGeometry){
-                    Properties props = new Properties();
-                    Geometry geoms = new Geometry();
-                    ArrayList<Coordinate> coord = s.getGeometry();
-                    for(Coordinate c: coord){
-                        geoms.addGeometry(c.getLongitude(), c.getLatitude());
-                    }
-                    props.put("name", s.getName());
-                    if(s.getFfs()>20)
-                        props.put("color", "#1199dd");
-                    else{
-                        props.put("color", "#d21f1b");
-                    }
-                    Feature feature = new Feature(geoms,props);
-                    if(!feature.isEmpty())
-                        featureCollection.addFeature(feature);
-                }
-                Gson gson = new Gson();
-                if(!streetsWithGeometry.isEmpty()){
-                    String toClient = gson.toJson(featureCollection);
-                    System.out.println(toClient);
-                    session.getBasicRemote().sendText(toClient);
-                    System.out.println("JSON inviato al client");
+            for(String s : areaNames){
+                i++;
+                System.out.println("Area #"+i+": "+s);
+            }
+            getStreetsTraffic(areaNames);//preleva i dati da kafka
+            //dovrebbe chiedere i dati a neo4j
+
+            System.out.println("Recuperando i dati da Neo4j....");
+            //Long id = Long.parseLong(streetsFromArea.get(1).getLinkid());
+            //System.out.println(id);
+            //System.out.println("Risultato da neo4j: " + database.getStreet(id));
+            i=0;
+            for(StreetMongo s: streetsFromArea){
+                i++;
+                Long localId = Long.parseLong(s.getLinkid());
+                try {
+                    Street neo4jResult = database.getStreet(localId);
+                    //System.out.println("Risultato #" + i + ": " + neo4jResult);
+                    streetsWithGeometry.add(neo4jResult);
+                }catch(org.neo4j.driver.exceptions.NoSuchRecordException e){
+                    System.out.println("Valore non trovato");
                 }
             }
-            else{
-                //never reached
-                session.getBasicRemote().sendText("Messaggio o Richiesta non ricevute con successo.");
+            System.out.println("Conversione dati in formato geojson...");
+            FeatureCollection featureCollection = new FeatureCollection();
+            for(Street s: streetsWithGeometry){
+                Properties props = new Properties();
+                Geometry geoms = new Geometry();
+                ArrayList<Coordinate> coord = s.getGeometry();
+                for(Coordinate c: coord){
+                    geoms.addGeometry(c.getLongitude(), c.getLatitude());
+                }
+                props.put("name", s.getName());
+                if(s.getFfs()>20)
+                    props.put("color", "#1199dd");
+                else{
+                    props.put("color", "#d21f1b");
+                }
+                Feature feature = new Feature(geoms,props);
+                if(!feature.isEmpty())
+                    featureCollection.addFeature(feature);
+            }
+            Gson gson = new Gson();
+            if(!streetsWithGeometry.isEmpty()){
+                String toClient = gson.toJson(featureCollection);
+                System.out.println(toClient);
+                session.getBasicRemote().sendText(toClient);
+                System.out.println("JSON inviato al client");
             }
 		}
    }
@@ -185,27 +174,19 @@ public class prova1 {
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "areasConsumerGroup");
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest"); //solo se necessaria, implica molti messaggi aggiuntivi
+        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         System.out.println("Creo il consumer");
         KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);//#1: KEY, #2: VALUE
         consumer.subscribe(areaNames);
         Gson gson = new Gson();
 
         while(flag1){//usa una variabile booleana che viene settata a false ogni volta che un nuovo messaggio viene ricevuto
-            System.out.println("While eseguito");
+            //System.out.println("While eseguito");
             ConsumerRecords<String, String> streetResults = consumer.poll(Duration.ofMillis(10000));
             int i=0;
             for(ConsumerRecord<String, String> record: streetResults){
                 i++;
-                //System.out.println("For eseguito "+i+" volte.");
-                //String key = record.key(); //mi restituisce sempre null
                 String value = record.value();
-                //String topic = record.topic();
-                //int partition = record.partition();
-                //long offset = record.offset();
-                //qui si elabora il messaggio
-                //System.out.println("RECORD#"+i+": "+ "\n KEY: "+key+ "\n VALUE: "+value+ "\n TOPIC: "+topic+ "\n PARTITION: "+partition+ "\n OFFSET: "+offset);//stampa delle strade ottenute da Kafka per debug
-                //System.out.println("VALUE: "+value);
                 streetsFromArea.add(gson.fromJson(value, StreetMongo.class));
             }
             if(i != 0) {//se i!=0 l'array ha elementi, quindi esco dal while
@@ -215,7 +196,6 @@ public class prova1 {
         }
     }
 }
-
 //Classi che rappresentano gli oggetti Json gestiti da questo endpoint
 class Message{
     private String type;
@@ -312,9 +292,6 @@ class RequestedSquare extends Message{
 				+"\nLower Right Corner: "+this.lowerRightCorner);
 	}
 }
-// Esempio elemento da restituire
-//{"avgTravelTime":9.4185001373291,"sdTravelTime":0.0,"numVehicles":1,"aggPeriod":179000,"domainAggTimestamp":1536186598000,"aggTimestamp":1626183204071,"linkid":"12500009324848","areaName":"Albigny-sur-Saone"}
-
 //ENCODERS
 class StreetEncoder implements Encoder.Text<StreetMongo>{
     private static Gson gson = new Gson();
