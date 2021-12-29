@@ -38,6 +38,7 @@ public class prova1 {
     private ArrayList<StreetMongo> streetsFromArea = new ArrayList<>(); //array di strade presenti nelle aree richieste, provenienti da mongo
     private ArrayList<Street> streetsWithGeometry = new ArrayList<>();  //array di strade contenenti un array che ne definisce la geometria, provenienti da Neo4J
     private Boolean flag1 = false;
+
     @OnOpen
     public void onOpen(Session session)throws IOException {
         this.session = session;
