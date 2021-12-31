@@ -146,6 +146,7 @@ class AreaWorker extends Thread{
     private ArrayList<StreetMongo> streetsFromArea = new ArrayList<>(); //array di strade presenti nelle aree richieste, provenienti da mongo
     private ArrayList<Street> streetsWithGeometry = new ArrayList<>();  //array di strade contenenti un array che ne definisce la geometria, provenienti da Neo4J
     private Boolean flag1 = false;
+    private Boolean running = false;
     private ConfigurationSingleton conf = ConfigurationSingleton.getInstance();
     private String uri = conf.getProperty("neo4j-core.bolt-uri");
     private String user = conf.getProperty("neo4j-core.user");
@@ -156,23 +157,33 @@ class AreaWorker extends Thread{
 
     public AreaWorker(ArrayList<String> areaNames, Session session){this.areaNames = areaNames; this.session = session;}
     public void run(){
-        //qui bisogna fare le varie operazioni di connessione ai database e di recupero dati
-        //connessione a Neo4J
-        database.openConnection();
-        //preleva i dati da kafka usando l'area contenuta in areaNames
-        getStreetsTraffic();
-        //preleva i dati da Neo4J tramite LongID
-        getStreetsFromNeo4J();
-        //converte i dati in formato GeoJson
-        convertToFeatures();
-        //invio i dati
-        try {
-            send();
-        } catch (IOException e) {
-            System.out.println("Qualcosa e' andato storto durante l'invio del GeoJson.");
-            e.printStackTrace();
+        running = true;
+        while(running) {
+            try {
+                //qui bisogna fare le varie operazioni di connessione ai database e di recupero dati
+                //connessione a Neo4J
+                database.openConnection();
+                //preleva i dati da kafka usando l'area contenuta in areaNames
+                getStreetsTraffic();
+                //preleva i dati da Neo4J tramite LongID
+                getStreetsFromNeo4J();
+                //converte i dati in formato GeoJson
+                convertToFeatures();
+                //invio i dati
+                if (session.isOpen()) {
+                    try {
+                        send();
+                    } catch (IOException e) {
+                        System.out.println("Qualcosa e' andato storto durante l'invio del GeoJson.");
+                        e.printStackTrace();
+                    }
+                }
+                disabilitate();
+                Thread.sleep(100);
+            }catch(InterruptedException e){
+                System.out.println("Thread interrotto, operazione non completata.");
+            }
         }
-        disabilitate();
     }
      private void getStreetsTraffic(){
         Properties props = new Properties();
@@ -244,6 +255,11 @@ class AreaWorker extends Thread{
             this.session.getBasicRemote().sendText(toClient);
             System.out.println("JSON inviato al client");
         }
+    }
+    @Override
+    public void interrupt(){
+        super.interrupt();
+        running = false;
     }
     public void abilitate(){
         this.flag1 = true;
