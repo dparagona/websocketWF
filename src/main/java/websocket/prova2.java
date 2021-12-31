@@ -172,6 +172,7 @@ class AreaWorker extends Thread{
             System.out.println("Qualcosa e' andato storto durante l'invio del GeoJson.");
             e.printStackTrace();
         }
+        disabilitate();
     }
      private void getStreetsTraffic(){
         Properties props = new Properties();
