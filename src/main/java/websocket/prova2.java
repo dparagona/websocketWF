@@ -33,24 +33,16 @@ import java.util.concurrent.CopyOnWriteArraySet;
 public class prova2 {
 
     private Session session;
-    private ConfigurationSingleton conf = ConfigurationSingleton.getInstance();
-    private Neo4jDAOImpl database;
     private static Set<prova2> provaEndpoints = new CopyOnWriteArraySet<>();
     private RequestedSquare square;
     private final AreaNameLogic areaNameLogic = new AreaNameLogic(); //serve per ottenere le aree interne ad un riquadro
     private ArrayList<StreetMongo> streetsFromArea = new ArrayList<>(); //array di strade presenti nelle aree richieste, provenienti da mongo
     private ArrayList<Street> streetsWithGeometry = new ArrayList<>();  //array di strade contenenti un array che ne definisce la geometria, provenienti da Neo4J
-    private Boolean flag1 = false;
     private Map<String, AreaWorker> workers = new HashMap<>();//mappa che contiene i vari workers
 
     @OnOpen
     public void onOpen(Session session)throws IOException {
         this.session = session;
-        String uri = conf.getProperty("neo4j-core.bolt-uri");
-        String user = conf.getProperty("neo4j-core.user");
-        String password = conf.getProperty("neo4j-core.password");
-        database = new Neo4jDAOImpl(uri, user, password);
-        database.openConnection();
         // Registra la sessione in un Set
         provaEndpoints.add(this);
         if(session != null){
@@ -60,8 +52,6 @@ public class prova2 {
     }
     @OnMessage
     public void onMessage(Session session, Message message)throws IOException {
-        flag1 = true;
-        session.getBasicRemote().sendText("Messaggio Ricevuto!");
         System.out.println("flag1 modificata a TRUE");
 
         if(message instanceof StreetMongo) {
@@ -79,7 +69,7 @@ public class prova2 {
             System.out.println("Messaggio: " + message);
             RequestedSquare square = (RequestedSquare) message;
 
-            session.getBasicRemote().sendText("Oggetto ricevuto con successo!");
+            session.getBasicRemote().sendText("Riquadro ricevuto con successo!");
             //qui bisogna controllare se il riquadro ricevuto e' diverso da quello gia' in possesso di questo Endpoint
             this.square = square;//per ora faccio cosi', poi bisogna vedere se c'e' bisogno di controllare che il nuovo quadrato richiesto non sia diverso dal precedente
             this.square.print(System.out);
@@ -90,7 +80,6 @@ public class prova2 {
             System.out.println(">>AREE RICEVUTE");
             System.out.println(" ");
 
-            //PROVA CON UNA SOLA AREA, MAGARI I DATI SONO MENO GRANDI E RENDERIZZA PRIMA
             //for(String s : areaNames){
                 i++;
                 System.out.println("Area #"+i+": "+areaNames.get(0));
@@ -99,16 +88,24 @@ public class prova2 {
                 areas.add(areaNames.get(0));
                 AreaWorker worker = new AreaWorker(areas, session);
                 workers.put(areaNames.get(0), worker);
-                worker.abilitate();
-                worker.start();//avendo eseguito questa, l'endpoint puo' restare in ascolto di altre richieste, mentre il worker polla su kafka
+
+                //worker.abilitate();
+                //worker.start();//avendo eseguito questa, l'endpoint puo' restare in ascolto di altre richieste, mentre il worker polla su kafka
             //}
+
+            for(String key: workers.keySet()){ //ad ogni nuovo messaggio in arrivo abilita tutti i workers
+                AreaWorker w = workers.get(key);
+                if(!w.getStatus())
+                    w.abilitate();
+                if(w.isInterrupted())//non so se va bene
+                    w.start();
+            }
         }
     }
 
     @OnClose
     public void onClose(Session session)throws IOException{
         //gestisce la chiusura della connessione
-        flag1 = false;
         provaEndpoints.remove(this);
         for(String w: workers.keySet()){
             workers.remove(w);//pulizia della mappa
@@ -158,7 +155,7 @@ class AreaWorker extends Thread{
     public AreaWorker(ArrayList<String> areaNames, Session session){this.areaNames = areaNames; this.session = session;}
     public void run(){
         running = true;
-        while(running) {
+        while(running) {//per via di questo controllo sulle interrupted exceptions, posso disabilitare il polling solo da fuori, perciò dovrò attivare un timer e rieseguire questo thread ogni 3 minuti circa
             try {
                 //qui bisogna fare le varie operazioni di connessione ai database e di recupero dati
                 //connessione a Neo4J
@@ -170,15 +167,17 @@ class AreaWorker extends Thread{
                 //converte i dati in formato GeoJson
                 convertToFeatures();
                 //invio i dati
-                if (session.isOpen()) {
-                    try {
-                        send();
-                    } catch (IOException e) {
-                        System.out.println("Qualcosa e' andato storto durante l'invio del GeoJson.");
-                        e.printStackTrace();
+                if(this.getStatus()) {//invia i dati solo se il worker e' abilitato
+                    if (session.isOpen()) {
+                        try {
+                            send();
+                        } catch (IOException e) {
+                            System.out.println("Qualcosa e' andato storto durante l'invio del GeoJson.");
+                            e.printStackTrace();
+                        }
                     }
                 }
-                disabilitate();
+                //disabilitate();
                 Thread.sleep(100);
             }catch(InterruptedException e){
                 System.out.println("Thread interrotto, operazione non completata.");
@@ -215,9 +214,9 @@ class AreaWorker extends Thread{
     }
     private void getStreetsFromNeo4J(){
         System.out.println("Recuperando i dati da Neo4j....");
-        int i=0;
+        //int i=0;
         for(StreetMongo s: streetsFromArea){
-            i++;
+            //i++;
             long localId = Long.parseLong(s.getLinkid());
             try {
                 Street neo4jResult = this.database.getStreet(localId);
@@ -250,9 +249,12 @@ class AreaWorker extends Thread{
     }
     private synchronized void send() throws IOException {
         if(!streetsWithGeometry.isEmpty()){
-            String toClient = gson.toJson(featureCollection);
+            AreaResponse response = new AreaResponse(areaNames.get(0), featureCollection);
+            //String toClient = gson.toJson(featureCollection);
+            String toClient = gson.toJson(response);
             System.out.println(toClient);
             this.session.getBasicRemote().sendText(toClient);
+
             System.out.println("JSON inviato al client");
         }
     }
@@ -267,8 +269,13 @@ class AreaWorker extends Thread{
     public void disabilitate(){
         this.flag1 = false;
     }
-    //if (flag1==true) {is Running} else {is Suspended}
+    //if (flag1==true) {polliing is Running} else {polling is Suspended}
     public Boolean getStatus(){
         return flag1;
     }
+}
+class AreaResponse{
+    private String aName;
+    private FeatureCollection collection;
+    public AreaResponse(String aName, FeatureCollection collection){this.aName = aName; this.collection = collection;}
 }
