@@ -198,7 +198,7 @@ class AreaWorker extends Thread{
 
 
         while(flag1){//usa una variabile booleana che viene settata a true ogni volta che un nuovo messaggio viene ricevuto
-            //System.out.println("While eseguito");
+            System.out.println("While eseguito");
             ConsumerRecords<String, String> streetResults = consumer.poll(Duration.ofMillis(10000));
             int i=0;
             for(ConsumerRecord<String, String> record: streetResults){
