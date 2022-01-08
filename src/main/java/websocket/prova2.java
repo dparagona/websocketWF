@@ -151,6 +151,7 @@ class AreaWorker extends Thread{
     private Neo4jDAOImpl database = new Neo4jDAOImpl(uri, user, password);
     private FeatureCollection featureCollection = new FeatureCollection();
     private Gson gson = new Gson();
+    int i;
 
     public AreaWorker(ArrayList<String> areaNames, Session session){this.areaNames = areaNames; this.session = session;}
     public void run(){
@@ -167,16 +168,17 @@ class AreaWorker extends Thread{
                 //converte i dati in formato GeoJson
                 convertToFeatures();
                 //invio i dati
-
-                if (session.isOpen()) {
-                    try {
-                        send();
-                    } catch (IOException e) {
-                        System.out.println("Qualcosa e' andato storto durante l'invio del GeoJson.");
-                        e.printStackTrace();
+                if(i != 0) {
+                    i=0;
+                    if (session.isOpen()) {
+                        try {
+                            send();
+                        } catch (IOException e) {
+                            System.out.println("Qualcosa e' andato storto durante l'invio del GeoJson.");
+                            e.printStackTrace();
+                        }
                     }
                 }
-
                 //disabilitate();
                 Thread.sleep(100);
             }catch(InterruptedException e){
@@ -200,7 +202,7 @@ class AreaWorker extends Thread{
         while(flag1){//usa una variabile booleana che viene settata a true ogni volta che un nuovo messaggio viene ricevuto
             System.out.println("While eseguito");
             ConsumerRecords<String, String> streetResults = consumer.poll(Duration.ofMillis(10000));
-            int i=0;
+            i = 0;
             for(ConsumerRecord<String, String> record: streetResults){
                 i++;
                 String value = record.value();
