@@ -142,7 +142,7 @@ class AreaWorker extends Thread{
     private final AreaNameLogic areaNameLogic = new AreaNameLogic(); //serve per ottenere le aree interne ad un riquadro
     private ArrayList<StreetMongo> streetsFromArea = new ArrayList<>(); //array di strade presenti nelle aree richieste, provenienti da mongo
     private ArrayList<Street> streetsWithGeometry = new ArrayList<>();  //array di strade contenenti un array che ne definisce la geometria, provenienti da Neo4J
-    private Boolean flag1 = false;
+    private Boolean flag1 = true;
     private Boolean running = false;
     private ConfigurationSingleton conf = ConfigurationSingleton.getInstance();
     private String uri = conf.getProperty("neo4j-core.bolt-uri");
@@ -197,7 +197,7 @@ class AreaWorker extends Thread{
         consumer.subscribe(areaNames);//purtroppo il metodo subscribe vuole solo arraylist, quindi bisogna usare arraylist anche per una sola area
 
 
-        while(flag1){//usa una variabile booleana che viene settata a false ogni volta che un nuovo messaggio viene ricevuto
+        while(flag1){//usa una variabile booleana che viene settata a true ogni volta che un nuovo messaggio viene ricevuto
             //System.out.println("While eseguito");
             ConsumerRecords<String, String> streetResults = consumer.poll(Duration.ofMillis(10000));
             int i=0;
