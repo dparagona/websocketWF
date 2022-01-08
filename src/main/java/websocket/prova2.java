@@ -89,17 +89,17 @@ public class prova2 {
                 AreaWorker worker = new AreaWorker(areas, session);
                 workers.put(areaNames.get(0), worker);
 
-                //worker.abilitate();
-                //worker.start();//avendo eseguito questa, l'endpoint puo' restare in ascolto di altre richieste, mentre il worker polla su kafka
+                worker.abilitate();
+                worker.start();//avendo eseguito questa, l'endpoint puo' restare in ascolto di altre richieste, mentre il worker polla su kafka
             //}
 
-            for(String key: workers.keySet()){ //ad ogni nuovo messaggio in arrivo abilita tutti i workers
-                AreaWorker w = workers.get(key);
-                if(!w.getStatus())
-                    w.abilitate();
-                if(w.isInterrupted())//non so se va bene
-                    w.start();
-            }
+            //for(String key: workers.keySet()){ //ad ogni nuovo messaggio in arrivo abilita tutti i workers
+              //  AreaWorker w = workers.get(key);
+              //  if(!w.getStatus())
+                 //   w.abilitate();
+              //  if(w.isInterrupted())//non so se va bene
+                //    w.start();
+           // }
         }
     }
 
