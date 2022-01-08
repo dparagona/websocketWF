@@ -142,7 +142,7 @@ class AreaWorker extends Thread{
     private final AreaNameLogic areaNameLogic = new AreaNameLogic(); //serve per ottenere le aree interne ad un riquadro
     private ArrayList<StreetMongo> streetsFromArea = new ArrayList<>(); //array di strade presenti nelle aree richieste, provenienti da mongo
     private ArrayList<Street> streetsWithGeometry = new ArrayList<>();  //array di strade contenenti un array che ne definisce la geometria, provenienti da Neo4J
-    private Boolean flag1 = true;
+    private Boolean flag1 = false;
     private Boolean running = false;
     private ConfigurationSingleton conf = ConfigurationSingleton.getInstance();
     private String uri = conf.getProperty("neo4j-core.bolt-uri");
@@ -167,16 +167,16 @@ class AreaWorker extends Thread{
                 //converte i dati in formato GeoJson
                 convertToFeatures();
                 //invio i dati
-                if(this.getStatus()) {//invia i dati solo se il worker e' abilitato
-                    if (session.isOpen()) {
-                        try {
-                            send();
-                        } catch (IOException e) {
-                            System.out.println("Qualcosa e' andato storto durante l'invio del GeoJson.");
-                            e.printStackTrace();
-                        }
+
+                if (session.isOpen()) {
+                    try {
+                        send();
+                    } catch (IOException e) {
+                        System.out.println("Qualcosa e' andato storto durante l'invio del GeoJson.");
+                        e.printStackTrace();
                     }
                 }
+
                 //disabilitate();
                 Thread.sleep(100);
             }catch(InterruptedException e){
