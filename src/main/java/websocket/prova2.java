@@ -168,8 +168,6 @@ class AreaWorker extends Thread{
                 //converte i dati in formato GeoJson
                 convertToFeatures();
                 //invio i dati
-                if(i != 0) {
-                    i=0;
                     if (session.isOpen()) {
                         try {
                             send();
@@ -178,7 +176,7 @@ class AreaWorker extends Thread{
                             e.printStackTrace();
                         }
                     }
-                }
+                
                 //disabilitate();
                 Thread.sleep(100);
             }catch(InterruptedException e){
