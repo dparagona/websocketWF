@@ -214,13 +214,13 @@ class AreaWorker extends Thread{
     }
     private void getStreetsFromNeo4J(){
         System.out.println("Recuperando i dati da Neo4j....");
-        //int i=0;
+        int j=0;
         for(StreetMongo s: streetsFromArea){
-            //i++;
+            j++;
             long localId = Long.parseLong(s.getLinkid());
             try {
                 Street neo4jResult = this.database.getStreet(localId);
-                //System.out.println("Risultato #" + i + ": " + neo4jResult);
+                System.out.println("Risultato #" + j + ": " + neo4jResult);
                 streetsWithGeometry.add(neo4jResult);
             }catch(org.neo4j.driver.exceptions.NoSuchRecordException e){
                 System.out.println("Valore non trovato");
