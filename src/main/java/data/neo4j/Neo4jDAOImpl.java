@@ -9,10 +9,7 @@ import org.neo4j.driver.exceptions.NoSuchRecordException;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 class IntersectionFieldsNeo4j {
@@ -159,6 +156,26 @@ public class Neo4jDAOImpl {
 
         return extractStreet(v);
     }
+
+    public ArrayList<Street> getStreetsFromLinkIds(Set<Long> streetIdsSet) {
+        ArrayList<Street> streets = new ArrayList<>();
+        ArrayList<Long> streetIds = new ArrayList<>(streetIdsSet);
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < streetIds.size() - 1; i++) {
+            builder.append(streetIds.get(i) + ",");
+        }
+        builder.append((streetIds.get(streetIds.size() - 1)));
+        String query = "MATCH ()-[s:STREET]->() WHERE s.linkId IN [" + builder + "] RETURN properties(s) as s";
+        Result result = databaseRead(query);
+
+        while (result.hasNext()) {
+            Record next = result.next();
+            Street s = extractStreet(next);
+            streets.add(s);
+        }
+        return streets;
+    }
+
 
     public ArrayList<Street> getStreetFromArea(String areaname, int zoom) {
         int frc = zoom - 10;

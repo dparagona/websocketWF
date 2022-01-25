@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>deck.gl client2</title>
+    <style>
+        #body {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+        }
+    </style>
+    <script src="https://unpkg.com/deck.gl@^8.0.0/dist.min.js"></script>
+    <script src="https://unpkg.com/@deck.gl/layers@^8.0.0/dist.min.js"></script>
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.4.1/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.css" rel="stylesheet">
+</head>
+<body style="margin:0" id="body">
+
+</body>
+
+<script type="module">
+    import {rgb} from 'https://cdn.skypack.dev/d3-color@3';
+
+    function colorToRGBArray(color) {
+        if (!color) {
+            return [255, 255, 255, 0];
+        }
+        if (Array.isArray(color)) {
+            return color.slice(0, 4);
+        }
+        const c = rgb(color);
+        return [c.r, c.g, c.b, 255];
+    }
+
+    const colorRange = [[254, 229, 217], [252, 187, 161], [252, 146, 114], [251, 106, 74], [222, 45, 38], [165, 15, 21]]
+    var mylayers = [];
+    const {MapboxLayer, ArcLayer, GeoJsonLayer} = deck;
+
+    mapboxgl.accessToken = 'pk.eyJ1IjoiY2FybWluZWNvbGFydXNzbzkzIiwiYSI6ImNrcm0xcmtzczB6aGUycWxmNmttc3h4MXkifQ.VIC6S08k18vho-EqBkuEtg';
+
+    const map = new mapboxgl.Map({
+        container: document.body,
+        style: 'mapbox://styles/mapbox/streets-v11',
+        center: [4.834277, 45.763420],
+        zoom: 14,
+        // pitch: 60
+    });
+
+    //WEBSOCKET IMPLEMENTATION
+    //Create websocket connection
+    // const serverLocation = "ws://websocket-wf-promenade-lyon.apps.kube.rcost.unisannio.it";
+    const serverLocation = "ws://localhost:8080";
+    const baseServiceURI = "/promenadeAreaNameService/prova2";
+    const socket = new WebSocket(serverLocation+baseServiceURI);//indirizzo di wildfly su openshift
+    //potrebbe servire implementare una funzione che lo svuoti e dei controlli che verifichino se è vuoto oppure no
+    var streetsBuffer;
+    //var streetsBuffer;//è il contenitore della stringa in arrivo
+    //var prova = {"avgTravelTime":9.4185001373291,"sdTravelTime":0.0,"numVehicles":1,"aggPeriod":179000,"domainAggTimestamp":1536186598000,"aggTimestamp":1626183201234,"linkid":"12500009324848","areaName":"Albigny-sur-Saone"};
+    //Connection opened
+    socket.addEventListener('open', function (event){
+        console.log("Connection opened!");
+
+        map.on('load', () => {
+
+        });
+        map.on('moveend', function (e) {
+            const bounds = map.getBounds();
+            sendBounds(bounds);
+        });
+    });
+    //Receiving messages from server
+    socket.addEventListener('message', function (event){
+        if(event.data.indexOf("geometry") < 0){console.log(">From Server: ", event.data);}
+
+        if(event.data.indexOf("geometry")>=0){
+            console.log(">>From Server: \n"+event.data);
+            streetsBuffer = JSON.parse(event.data.toString());//trasformo la stringa in input in un JSON
+
+            //ho incapsulato la FeatureCollection in una classe che ha una proprietà contenente il nome dell'area da cui provengono i dati contenuti dalla collection
+            //streetsBuffer.aName;
+            //streetsBuffer.collection;
+
+            //cleanMap();
+            if(mylayers.length == 0){
+                var layer = new MapboxLayer({
+                    id: streetsBuffer.aName,
+                    type: GeoJsonLayer,
+                    data: streetsBuffer.collection,//qui bisogna inserire il geojson (oggetto FeatureCollection)
+                    pickable: true,
+                    stroked: false,
+                    filled: true,
+                    extruded: true,
+                    lineWidthScale: 5,
+                    lineWidthMinPixels: 1,
+                    getFillColor: [160, 160, 180, 200],
+                    getLineColor: d => colorToRGBArray(d.properties.color),
+                    getPointRadius: 100, //getRadius: 100
+                    getLineWidth: 1,
+                    getElevation: 30
+                });
+                map.addLayer(layer);
+                mylayers.push(layer);
+            }
+
+            mylayers.forEach(l => {
+                if(l.id == streetsBuffer.aName){
+                    map.getLayer(l.id).data=streetsBuffer.collection;
+                    //map.getLayer(l.id).data=addSource(streetsBuffer.collection);//funzione che mi permette di aggiornare la sorgente di una mappa, non so se esiste per un livello
+                    console.log("Found a duplicate!");
+
+                }else{
+                    var layer = new MapboxLayer({
+                    id: streetsBuffer.aName,
+                    type: GeoJsonLayer,
+                    data: streetsBuffer.collection,//qui bisogna inserire il geojson (oggetto FeatureCollection)
+                    pickable: true,
+                    stroked: false,
+                    filled: true,
+                    extruded: true,
+                    lineWidthScale: 5,
+                    lineWidthMinPixels: 1,
+                    getFillColor: [160, 160, 180, 200],
+                    getLineColor: d => colorToRGBArray(d.properties.color),
+                    getPointRadius: 100, //getRadius: 100
+                    getLineWidth: 1,
+                    getElevation: 30
+                });
+                map.addLayer(layer);
+                mylayers.push(layer);
+                }
+            });
+            console.log(mylayers);
+        }
+    });
+
+    //Connection closed
+    socket.addEventListener('close', function (event){
+        console.log("Connessione chiusa con successo.");
+        socket.close(1000, "The connection successfully completed the purpose for which it was created.");//vuole due prametri: code e reason
+        //svuota buffer e mappa, chiude la socket e dealloca tutto il deallocabile
+    });
+
+    //Connection error
+    socket.addEventListener('error', function (event){
+        console.log("Errore della websocket: ", event);
+        //serve quando si effettuano richieste mentre la connessione non è ancofra pronta
+    });
+
+    function cleanMap() {
+        console.log("cleanMap invoked!");
+        //console.log("Layers prima della pulizia: ");
+        //console.log(mylayers);
+        mylayers.forEach(l => {
+            map.removeLayer(l.id);// per interagire con i layer della mappa servono gli id
+        })
+        mylayers = []
+        //console.log("Layers dopo la pulizia: ");
+        //console.log(mylayers);
+    }
+
+    function sendBounds(bounds){
+        var square = bounds.toArray();
+        //console.log("Square Sent: "+JSON.stringify(bounds));
+        var upperLeftCorner = square[1][0] +","+square[1][1];
+        //console.log("NorthWestCorner: "+upperLeftCorner);
+        var lowerRightCorner = square[0][0] +","+square[0][1];
+        //console.log("SouthEastCorner: "+lowerRightCorner);
+        var squareRequest = {"upperLeftCorner": upperLeftCorner, "lowerRightCorner": lowerRightCorner, "type":"RequestedSquare"};
+        socket.send(JSON.stringify(squareRequest));
+        console.log("Requested Square: "+JSON.stringify(squareRequest));
+    }
+</script>
+</html>

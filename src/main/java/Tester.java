@@ -1,4 +1,3 @@
-
 import com.mongodb.client.*;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.geojson.Polygon;
