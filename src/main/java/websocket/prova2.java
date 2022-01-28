@@ -82,7 +82,7 @@ public class prova2 {
 
 			//per ogni area, se la mappa non contiene un worker per n-esima area, ne crea uno, lo abilita e lo esegue, altrimenti lo recupera dalla mappa e lo abilita
             for(String s : areaNames){
-				if(!workers.keyset().contains(s)){
+				if(!workers.keySet().contains(s)){
 					i++;
 					System.out.println("Area #" + i + ": " + s+"   Nuova.");
 					//QUI BISOGNA INVOCARE UN THREAD PER OGNI AREA, INOLTRE BISOGNA SALVARE IN UNA MAPPA TUTTI I WORKER LANCIATI
