@@ -80,26 +80,26 @@ public class prova2 {
             System.out.println(">>AREE RICEVUTE");
             System.out.println(" ");
 
-            //for(String s : areaNames){
-            i++;
-            System.out.println("Area #" + i + ": " + areaNames.get(0));
-            //QUI BISOGNA INVOCARE UN THREAD PER OGNI AREA, INOLTRE BISOGNA SALVARE IN UNA MAPPA TUTTI I WORKER LANCIATI
-            ArrayList<String> areas = new ArrayList<>();
-            areas.add(areaNames.get(0));
-            AreaWorker worker = new AreaWorker(areas, session);
-            workers.put(areaNames.get(0), worker);
+			//per ogni area, se la mappa non contiene un worker per n-esima area, ne crea uno, lo abilita e lo esegue, altrimenti lo recupera dalla mappa e lo abilita
+            for(String s : areaNames){
+				if(!workers.keyset().contains(s)){
+					i++;
+					System.out.println("Area #" + i + ": " + s+"   Nuova.");
+					//QUI BISOGNA INVOCARE UN THREAD PER OGNI AREA, INOLTRE BISOGNA SALVARE IN UNA MAPPA TUTTI I WORKER LANCIATI
+					ArrayList<String> areas = new ArrayList<>();
+					areas.add(s);
+					AreaWorker worker = new AreaWorker(areas, session);
+					workers.put(s, worker);
 
-            worker.abilitate();
-            worker.start();//avendo eseguito questa, l'endpoint puo' restare in ascolto di altre richieste, mentre il worker polla su kafka
-            //}
-
-            //for(String key: workers.keySet()){ //ad ogni nuovo messaggio in arrivo abilita tutti i workers
-            //  AreaWorker w = workers.get(key);
-            //  if(!w.getStatus())
-            //   w.abilitate();
-            //  if(w.isInterrupted())//non so se va bene
-            //    w.start();
-            // }
+					worker.abilitate();
+					worker.start();//avendo eseguito questa, l'endpoint puo' restare in ascolto di altre richieste, mentre il worker polla su kafka
+				}else{
+					i++;
+					System.out.println("Area #" + i + ": " + s+"   Woke Up");
+					workers.get(s).abilitate();
+				}
+            }
+			notifyAll();
         }
     }
 
