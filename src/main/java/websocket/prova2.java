@@ -20,11 +20,7 @@ import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-//BISOGNA IMPLEMENTARE LA CONCORRENZA
-//1) L'ENDPOINT DEVE SOLO AVVIARE UN THREAD PER AREA
-//2) BISOGNA SALVARE I WORKER IN UNA MAPPA LA CUI CHIAVE E' IL NOME DELL'AREA
-//3) L'ENDPOINT HA LA RESPONSABILITA' DI AVVIARE, SOSPENDERE E ELIMINARE I VARI WORKERS
-//4) LA SEND DEVE ESSERE UTILIZZATA IN UN BLOCCO SYNCHRONIZED PERCHE' NON E' ASINCRONA
+
 @ServerEndpoint(
         value = "/prova2",
         decoders = {MessageDecoder.class},
@@ -149,7 +145,7 @@ class AreaWorker extends Thread {
     private final AreaNameLogic areaNameLogic = new AreaNameLogic(); //serve per ottenere le aree interne ad un riquadro
     private HashMap<Long, StreetMongo> streetsFromArea = new HashMap<>(); //array di strade presenti nelle aree richieste, provenienti da mongo
     private HashMap<Long, Street> streetsWithGeometry = new HashMap<>();  //array di strade contenenti un array che ne definisce la geometria, provenienti da Neo4J
-    private Boolean flag1 = false;
+    private Boolean flag1 = true;
     private Boolean running = false;
     private ConfigurationSingleton conf = ConfigurationSingleton.getInstance();
     private String uri = conf.getProperty("neo4j-core.bolt-uri");
@@ -165,13 +161,22 @@ class AreaWorker extends Thread {
         this.session = session;
     }
 
-    public void run() {
+    public synchronized void run() {
         System.out.println("Starting Worker: " + this.areaNames);
         running = true;
-        while (running) {//per via di questo controllo sulle interrupted exceptions, posso disabilitare il polling solo da fuori, perciò dovrò attivare un timer e rieseguire questo thread ogni 3 minuti circa
+        while (running) {
             try {
                 //qui bisogna fare le varie operazioni di connessione ai database e di recupero dati
-                //connessione a Neo4J
+                //meccanismo di controllo del ciclo di vita del thread (aspetta se flag1 e' vera)
+				while(flag1){
+					try{
+						wait();
+					}catch(InterruptedException e){
+						Thread.currentThread().interrupt();
+						System.out.println("Thread Interrupted");
+					}
+				}
+				//connessione a Neo4J
                 database.openConnection();
                 //preleva i dati da kafka usando l'area contenuta in areaNames
                 getStreetsTraffic();
@@ -189,8 +194,8 @@ class AreaWorker extends Thread {
                     }
                 }
 
-                //disabilitate();
-                Thread.sleep(100);
+                disabilitate();
+                wait(100);
             } catch (InterruptedException e) {
                 System.out.println("Thread interrotto, operazione non completata.");
             }
@@ -212,7 +217,7 @@ class AreaWorker extends Thread {
 
 
         while (true) {//usa una variabile booleana che viene settata a true ogni volta che un nuovo messaggio viene ricevuto
-            System.out.println("While eseguito");
+            System.out.println("Poll eseguito");
             ConsumerRecords<String, String> streetResults = consumer.poll(Duration.ofMillis(10000));
             i = 0;
             for (ConsumerRecord<String, String> record : streetResults) {
@@ -232,11 +237,15 @@ class AreaWorker extends Thread {
 
     private void getStreetsFromNeo4J() {
         System.out.println("Recuperando i dati da Neo4j....");
-        ArrayList<Street> streets = this.database.getStreetsFromLinkIds(streetsFromArea.keySet());
-        for (Street s: streets){
-            streetsWithGeometry.put(s.getLinkId(), s);
-        }
-        System.out.println("Strade Recuperate");
+		try{
+			ArrayList<Street> streets = this.database.getStreetsFromLinkIds(streetsFromArea.keySet());
+			for (Street s: streets){
+				streetsWithGeometry.put(s.getLinkId(), s);
+			}
+			System.out.println("Strade Recuperate");
+		}catch(org.neo4j.driver.exceptions.NoSuchRecordException e){
+			System.out.println("Strade non trovate, c'e' stato un problema con neo4j");
+		}
         //int j=0;
 //        for (StreetMongo s : streetsFromArea) {
 //        for (Long key : streetsFromArea.keySet()) {
@@ -295,14 +304,14 @@ class AreaWorker extends Thread {
     }
 
     public void abilitate() {
-        this.flag1 = true;
-    }
-
-    public void disabilitate() {
         this.flag1 = false;
     }
 
-    //if (flag1==true) {polliing is Running} else {polling is Suspended}
+    public void disabilitate() {
+        this.flag1 = true;
+    }
+
+    //if (flag1==true) {polling is Suspended} else {polling is Running}
     public Boolean getStatus() {
         return flag1;
     }
