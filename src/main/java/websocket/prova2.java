@@ -167,13 +167,13 @@ class AreaWorker extends Thread {
         while (running) {
             try {
                 //qui bisogna fare le varie operazioni di connessione ai database e di recupero dati
-                //meccanismo di controllo del ciclo di vita del thread (aspetta se flag1 e' vera)
+					//meccanismo di controllo del ciclo di vita del thread (aspetta se flag1 e' vera)
 				while(flag1){
 					try{
 						wait();
 					}catch(InterruptedException e){
 						Thread.currentThread().interrupt();
-						System.out.println("Thread Interrupted");
+						System.out.println("Thread "+areanames.get(0)+" Interrupted");
 					}
 				}
 				//connessione a Neo4J
@@ -236,7 +236,7 @@ class AreaWorker extends Thread {
     }
 
     private void getStreetsFromNeo4J() {
-        System.out.println("Recuperando i dati da Neo4j....");
+        System.out.println("Recuperando i dati da Neo4j...");
 		try{
 			ArrayList<Street> streets = this.database.getStreetsFromLinkIds(streetsFromArea.keySet());
 			for (Street s: streets){
