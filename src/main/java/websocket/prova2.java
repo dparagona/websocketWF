@@ -173,7 +173,7 @@ class AreaWorker extends Thread {
 						wait();
 					}catch(InterruptedException e){
 						Thread.currentThread().interrupt();
-						System.out.println("Thread "+areanames.get(0)+" Interrupted");
+						System.out.println("Thread "+areaNames.get(0)+" Interrupted");
 					}
 				}
 				//connessione a Neo4J
