@@ -130,7 +130,7 @@ public class prova2 {
             }
         });
     }
-	private synchronized wakeUp(){
+	private synchronized void wakeUp(){
 		notifyAll();
 	}
     private ArrayList<String> getAreaNames(RequestedSquare s) {
