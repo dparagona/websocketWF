@@ -92,11 +92,11 @@ public class prova2 {
 					workers.put(s, worker);
 
 					worker.abilitate();
-					worker.start();//avendo eseguito questa, l'endpoint puo' restare in ascolto di altre richieste, mentre il worker polla su kafka
+					worker.start();
 				}else{
 					i++;
 					System.out.println("Area #" + i + ": " + s+"   Woke Up");
-					workers.get(s).abilitate();
+					if(!workers.get(s).isInterrupted()){workers.get(s).abilitate();}
 				}
             }
 			
@@ -130,7 +130,7 @@ public class prova2 {
             }
         });
     }
-	private synchronized void wakeUp(){
+	private synchronized wakeUp(){
 		notifyAll();
 	}
     private ArrayList<String> getAreaNames(RequestedSquare s) {
@@ -306,11 +306,11 @@ class AreaWorker extends Thread {
         running = false;
     }
 
-    public void abilitate() {
+    public synchronized void abilitate() {
         this.flag1 = false;
     }
 
-    public void disabilitate() {
+    public synchronized void disabilitate() {
         this.flag1 = true;
     }
 
