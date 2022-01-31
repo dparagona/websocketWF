@@ -172,7 +172,7 @@ class AreaWorker extends Thread {
 					try{
 						wait();
 					}catch(InterruptedException e){
-						Thread.currentThread().interrupt();
+						interrupt();
 						System.out.println("Thread "+areaNames.get(0)+" Interrupted");
 					}
 				}
