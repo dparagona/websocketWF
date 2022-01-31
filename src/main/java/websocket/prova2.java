@@ -99,7 +99,8 @@ public class prova2 {
 					workers.get(s).abilitate();
 				}
             }
-			notifyAll();
+			
+			wakeUp();
         }
     }
 
@@ -129,7 +130,9 @@ public class prova2 {
             }
         });
     }
-
+	private synchronized wakeUp(){
+		notifyAll();
+	}
     private ArrayList<String> getAreaNames(RequestedSquare s) {
         float lon1 = Float.parseFloat(s.getUpperLeftCorner().substring(0, s.getUpperLeftCorner().indexOf(",")));
         float len1 = Float.parseFloat(s.getUpperLeftCorner().substring(s.getUpperLeftCorner().indexOf(",") + 1));
