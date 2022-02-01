@@ -96,7 +96,13 @@ public class prova2 {
 				}else{
 					i++;
 					System.out.println("Area #" + i + ": " + s+"   Woke Up");
-					if(!workers.get(s).isInterrupted()){workers.get(s).abilitate();}
+					AreaWorker worker = workers.get(s);
+					if(!worker.isInterrupted()){
+						worker.abilitate();}
+					else{
+						worker.abilitate();
+						worker.start();
+					}
 				}
             }
 			
