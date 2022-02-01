@@ -231,7 +231,7 @@ class AreaWorker extends Thread {
 //                streetsFromArea.add();
             }
             if (i != 0) {//se i!=0 l'array ha elementi, quindi esco dal while
-                System.out.println("Dati prelevati da Kafka e flag1 del Worker di " + areaNames.get(0) + " modificato a FALSE");
+                System.out.println("Dati prelevati da Kafka, Worker di " + areaNames.get(0)+".");
                 break;
 //                disabilitate();
             }
@@ -293,7 +293,7 @@ class AreaWorker extends Thread {
             AreaResponse response = new AreaResponse(areaNames.get(0), featureCollection);
             //String toClient = gson.toJson(featureCollection);
             String toClient = gson.toJson(response);
-            System.out.println(toClient);
+            //System.out.println(toClient);
             this.session.getBasicRemote().sendText(toClient);
 
             System.out.println("JSON inviato al client");
