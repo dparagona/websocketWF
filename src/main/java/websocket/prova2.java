@@ -93,12 +93,14 @@ public class prova2 {
 
 					worker.abilitate();
 					worker.start();
-				}else{ //se il worker esiste già nella mappa puo' essere interrotto o no
+				}else{ //se il worker esiste gia' nella mappa puo' essere o interrotto o non interrotto
 					i++;
 					System.out.println("Area #" + i + ": " + s+"   Woke Up");
 					AreaWorker worker = workers.get(s);
+
 					if(!worker.isInterrupted()){//sta facendo la wait
 						worker.abilitate();
+
 					}else{//e' interrotto
 						System.out.println("Era interrotto.");
 						ArrayList<String> areas = new ArrayList<>();
