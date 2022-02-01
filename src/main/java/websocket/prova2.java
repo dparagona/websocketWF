@@ -315,6 +315,7 @@ class AreaWorker extends Thread {
 
     public synchronized void abilitate() {
         this.flag1 = false;
+		running = true;
     }
 
     public synchronized void disabilitate() {
