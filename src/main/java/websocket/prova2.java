@@ -93,20 +93,25 @@ public class prova2 {
 
 					worker.abilitate();
 					worker.start();
-				}else{
+				}else{ //se il worker esiste già nella mappa puo' essere interrotto o no
 					i++;
 					System.out.println("Area #" + i + ": " + s+"   Woke Up");
 					AreaWorker worker = workers.get(s);
-					if(!worker.isInterrupted()){
+					if(!worker.isInterrupted()){//sta facendo la wait
 						worker.abilitate();
-					}else{
+					}else{//e' interrotto
+						System.out.println("Era interrotto.");
+						ArrayList<String> areas = new ArrayList<>();
+						areas.add(s);
+						AreaWorker worker = new AreaWorker(areas, session);
+						workers.put(s, worker);
+						
 						worker.abilitate();
 						worker.start();
 					}
 				}
             }
-			
-			wakeUp();
+			notifyAll();
         }
     }
 
@@ -315,7 +320,6 @@ class AreaWorker extends Thread {
 
     public synchronized void abilitate() {
         this.flag1 = false;
-		running = true;
     }
 
     public synchronized void disabilitate() {
