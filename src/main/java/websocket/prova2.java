@@ -105,11 +105,11 @@ public class prova2 {
 						System.out.println("Era interrotto.");
 						ArrayList<String> areas = new ArrayList<>();
 						areas.add(s);
-						AreaWorker worker = new AreaWorker(areas, session);
-						workers.put(s, worker);
+						AreaWorker worker2 = new AreaWorker(areas, session);
+						workers.put(s, worker2);
 						
-						worker.abilitate();
-						worker.start();
+						worker2.abilitate();
+						worker2.start();
 					}
 				}
             }
