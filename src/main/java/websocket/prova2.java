@@ -304,6 +304,7 @@ class AreaWorker extends Thread {
     public void interrupt() {
         super.interrupt();
         running = false;
+		flag1 = false;
     }
 
     public synchronized void abilitate() {
