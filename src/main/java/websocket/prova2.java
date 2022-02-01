@@ -98,8 +98,8 @@ public class prova2 {
 					System.out.println("Area #" + i + ": " + s+"   Woke Up");
 					AreaWorker worker = workers.get(s);
 					if(!worker.isInterrupted()){
-						worker.abilitate();}
-					else{
+						worker.abilitate();
+					}else{
 						worker.abilitate();
 						worker.start();
 					}
