@@ -177,10 +177,10 @@ class AreaWorker extends Thread {
         this.session = session;
     }
 
-    public synchronized void run() {
+    public void run() {
         System.out.println("Starting Worker: " + this.areaNames);
         running = true;
-        while (running) {
+        while (!isInterrupted()) {
             try {
                 //qui bisogna fare le varie operazioni di connessione ai database e di recupero dati
 					//meccanismo di controllo del ciclo di vita del thread (aspetta se flag1 e' vera)
@@ -316,11 +316,10 @@ class AreaWorker extends Thread {
     }
 	
 		
-		public synchronized void interrompi() {
-			interrupt();
-			running = false;
-			flag1 = false;
-		}
+	public synchronized void interrompi() {
+		interrupt();
+		flag1 = false;
+	}
 	
 
     public synchronized void abilitate() {
