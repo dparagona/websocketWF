@@ -113,7 +113,7 @@ public class prova2 {
 					}
 				}
             }
-			notifyAll();
+			wakeUp();
         }
     }
 
