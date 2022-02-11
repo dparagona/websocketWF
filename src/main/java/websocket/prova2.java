@@ -67,7 +67,7 @@ public class prova2 {
             System.out.println("Messaggio: " + message);
             RequestedSquare square = (RequestedSquare) message;
             for(String key : workers.keySet()){
-                workers.get(key).interrupt();
+                workers.get(key).interrompi();
             }
             session.getBasicRemote().sendText("Riquadro ricevuto con successo!");
             //qui bisogna controllare se il riquadro ricevuto e' diverso da quello gia' in possesso di questo Endpoint
@@ -188,7 +188,7 @@ class AreaWorker extends Thread {
 					try{
 						wait();
 					}catch(InterruptedException e){
-						interrupt();
+						interrompi();
 						System.out.println("Thread "+areaNames.get(0)+" Interrupted");
 					}
 				}
@@ -245,7 +245,9 @@ class AreaWorker extends Thread {
             }
             if (i != 0) {//se i!=0 l'array ha elementi, quindi esco dal while
                 System.out.println("Dati prelevati da Kafka, Worker di " + areaNames.get(0)+".");
-                break;
+                i=0;
+				consumer.close();
+				break;
 //                disabilitate();
             }
         }
@@ -312,13 +314,14 @@ class AreaWorker extends Thread {
             System.out.println("JSON inviato al client");
         }
     }
-
-    @Override
-    public void interrupt() {
-        super.interrupt();
-        running = false;
-		flag1 = false;
-    }
+	
+		
+		public synchronized void interrompi() {
+			interrupt();
+			running = false;
+			flag1 = false;
+		}
+	
 
     public synchronized void abilitate() {
         this.flag1 = false;
