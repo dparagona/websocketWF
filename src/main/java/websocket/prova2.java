@@ -273,6 +273,7 @@ class AreaBuffer{
 			}
 		}
 		//AreaElement element = coda.removeFirst();
+		return null;
 	}
 }
 //PRODUTTORE
@@ -334,21 +335,23 @@ class AreaConsumer implements Runnable{
 			//}
 			//chiama i metodi sull'istanza di element(nel caso questo worker abbia gia' un'istanza di element, non ci sara' bisogno di mettersi in coda al buffer
 				//preleva i dati da kafka usando l'area contenuta in areaNames
-                this.element.getStreetsTraffic();
-                //preleva i dati da Neo4J tramite LongID
-                this.element.getStreetsFromNeo4J();
-                //converte i dati in formato GeoJson
-                this.element.convertToFeatures();
-                //invio i dati
-                if (element.getSession().isOpen()) {
-                    try {
-                        this.element.send();
-                    } catch (IOException e) {
-                        System.out.println("Qualcosa e' andato storto durante l'invio del GeoJson.");
-                        e.printStackTrace();
-                    }
-                }else{
-					System.out.println("Sessione chiusa.");
+				if(element != null){
+					this.element.getStreetsTraffic();
+					//preleva i dati da Neo4J tramite LongID
+					this.element.getStreetsFromNeo4J();
+					//converte i dati in formato GeoJson
+					this.element.convertToFeatures();
+					//invio i dati
+					if (element.getSession().isOpen()) {
+						try {
+							this.element.send();
+						} catch (IOException e) {
+							System.out.println("Qualcosa e' andato storto durante l'invio del GeoJson.");
+							e.printStackTrace();
+						}
+					}else{
+						System.out.println("Sessione chiusa.");
+					}
 				}
 		}
 	}
