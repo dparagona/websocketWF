@@ -125,7 +125,7 @@ class AreaElement{
 	private ConfigurationSingleton conf = ConfigurationSingleton.getInstance();    
 	private FeatureCollection featureCollection = new FeatureCollection();
     private Gson gson = new Gson();
-	private  KafkaConsumer<String, String> consumer;
+	private KafkaConsumer<String, String> consumer;
 
 	public AreaElement(ArrayList<String> areaNames, Session session){
 		Properties props = new Properties();
@@ -266,12 +266,12 @@ class AreaBuffer{
 		for(AreaElement e: coda){
 			if(e.getAreaName() == areaName){
 				int position = coda.indexOf(e);
-				AreaElement element = coda.get(position);
-				coda.remove(position);
+				AreaElement element = coda.remove(position);
 				notifyAll();
 				return element;
 			}
 		}
+		notifyAll();
 		//AreaElement element = coda.removeFirst();
 		return null;
 	}
@@ -335,7 +335,8 @@ class AreaConsumer implements Runnable{
 			//}
 			//chiama i metodi sull'istanza di element(nel caso questo worker abbia gia' un'istanza di element, non ci sara' bisogno di mettersi in coda al buffer
 				//preleva i dati da kafka usando l'area contenuta in areaNames
-				if(element != null){
+				//if(element != null){
+				try{
 					this.element.getStreetsTraffic();
 					//preleva i dati da Neo4J tramite LongID
 					this.element.getStreetsFromNeo4J();
@@ -352,7 +353,10 @@ class AreaConsumer implements Runnable{
 					}else{
 						System.out.println("Sessione chiusa.");
 					}
+				}catch(NullPointerException exc){
+					System.err.println("NullPointerException");
 				}
+				//}
 		}
 	}
 
