@@ -71,16 +71,19 @@ public class prova2 {
 			
 			//bisogna prima pulire la mappa dalle aree che non sono state richieste
 			//per ogni chiave della mappa, se il nuovo insieme di aree richieste non contiene la chiave corrispondente all'i.esimo worker, elimina il worker che non e' stato richiesto
-			for(String s: workers.keySet()){
-				String chiave = s;
-				if(!areaNames.contains(chiave)){
+			Iterator it = workers.keySet().iterator();
+			while(it.hasNext()){
+				String s = it.next();
+				if(!areaNames.contains(s)){
 					//elimina il worker perche' non e' stata richiesta l'area di sua competenza
 					//workers.get(s).interrupt();
-					workers.remove(chiave).interrupt();
+					workers.remove(s).interrupt();
 				}
 			}
 			//per ogni area, se la mappa non contiene un worker corrispondente, ne istanzia uno, lo aggiunge alla mappa e lo fa partire
-            for(String s : areaNames){
+            Iterator it2 = workers.keySet().iterator();
+			while(it2.hasNext()){
+				String s = it2.next();
 				if(!workers.keySet().contains(s)){
 					//alloca tutto il necessario e avvia i processi da avviare
 					Thread produttore = new Thread(new AreaProducer(buffer, s, session));
