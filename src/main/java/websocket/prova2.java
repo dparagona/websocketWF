@@ -329,13 +329,13 @@ class AreaConsumer implements Runnable{
 	@Override
 	public void run(){//per non stressare troppo i database e il server, si puo' chiamare questo metodo con un ritardo
 		while(true){
-		//	if(element == null){//se non c'e' un'istanza di element bisogna mettersi in coda al buffer
+			if(element == null){//se non c'e' un'istanza di element bisogna mettersi in coda al buffer
 				//try{
 					AreaElement element = buffer.prelevaAreaElement(areaName);
 				//}catch(InterruptedException exc){
 				//	System.err.println("InterruptedException");
 				//}
-			//}
+			}else{
 			//chiama i metodi sull'istanza di element(nel caso questo worker abbia gia' un'istanza di element, non ci sara' bisogno di mettersi in coda al buffer
 				//preleva i dati da kafka usando l'area contenuta in areaNames
 				//if(element != null){
@@ -359,7 +359,7 @@ class AreaConsumer implements Runnable{
 				}catch(NullPointerException exc){
 					System.err.println("NullPointerException");
 				}
-				//}
+			}
 		}
 	}
 
