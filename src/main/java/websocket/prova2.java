@@ -58,9 +58,6 @@ public class prova2 {
          if (message instanceof RequestedSquare) {
             System.out.println("Messaggio: " + message);
             RequestedSquare square = (RequestedSquare) message;
-            for(String key : workers.keySet()){
-                workers.get(key).interrompi();
-            }
             session.getBasicRemote().sendText("Riquadro ricevuto con successo!");
             //qui bisogna controllare se il riquadro ricevuto e' diverso da quello gia' in possesso di questo Endpoint
             this.square = square;//per ora faccio cosi', poi bisogna vedere se c'e' bisogno di controllare che il nuovo quadrato richiesto non sia diverso dal precedente
@@ -73,10 +70,10 @@ public class prova2 {
             System.out.println(" ");
 			
 			//bisogna prima pulire la mappa dalle aree che non sono state richieste
-			//per ogni chiave della mappa, se il nuovo insieme di aree richieste non contiene la chiave corrispondente all'i-esimo worker, elimina il worker che non è stato richiesto
+			//per ogni chiave della mappa, se il nuovo insieme di aree richieste non contiene la chiave corrispondente all'i.esimo worker, elimina il worker che non e' stato richiesto
 			for(String s: workers.keySet()){
 				if(!areaNames.contains(s)){
-					//elimina il worker perchè non è stata richiesta l'area di sua competenza
+					//elimina il worker perche' non e' stata richiesta l'area di sua competenza
 					//workers.get(s).interrupt();
 					workers.remove(s).interrupt();
 				}
@@ -130,6 +127,8 @@ class AreaElement{
 	private  KafkaConsumer<String, String> consumer;
 
 	public AreaElement(ArrayList<String> areaNames, Session session){
+		Properties props = new Properties();
+
 		this.areaNames = areaNames;
         this.session = session;
 		//creazione del consumer di kafka (lo faccio qui per non doverlo creare ad ogni invocazione del metodo getStreetTraffic())
@@ -144,7 +143,7 @@ class AreaElement{
 	}
 
 	//metodi di AreaWorker
-	public void getStreetsTraffic() { // non dovrebbe più essere necessario effettuare la poll in un ciclo while, perchè ce n'è già uno a monte, solo che in questo modo l'output sarà enorme, quindi mi converrà creare un kafka consumer fuori dall'elemento, per poi passarglielo come parametro nel costruttore 
+	public void getStreetsTraffic() { // non dovrebbe piu' essere necessario effettuare la poll in un ciclo while, perchè ce n'e' gia' uno a monte, solo che in questo modo l'output sara' enorme, quindi mi converra' creare un kafka consumer fuori dall'elemento, per poi passarglielo come parametro nel costruttore 
         
         this.consumer.subscribe(this.areaNames);//il metodo subscribe vuole solo arraylist, quindi bisogna usare arraylist anche per una sola area
        // while (true) {
@@ -268,11 +267,12 @@ class AreaBuffer{
 				int position = coda.indexOf(e);
 				AreaElement element = coda.get(position);
 				coda.remove(position);
+				notifyAll();
+				return element;
 			}
 		}
 		//AreaElement element = coda.removeFirst();
-		notifyAll();
-		return element;
+		return null;
 	}
 }
 //PRODUTTORE
@@ -302,7 +302,7 @@ class AreaProducer implements Runnable{
 			//}
 			try{
 				//inserisce l'istanza di elemento nel buffer
-				buffer.aggiungiAreaElement(element);//non serve un while perchè questo thread viene messo in attesa se il buffer è pieno, per cui appena il buffer si svuota, questo aggiunge l'elemento al buffer
+				buffer.aggiungiAreaElement(element);//non serve un while perche' questo thread viene messo in attesa se il buffer e' pieno, per cui appena il buffer si svuota, questo aggiunge l'elemento al buffer
 
 			}catch(InterruptedException exc){
 				System.err.println("InterruptedException");
@@ -323,16 +323,16 @@ class AreaConsumer implements Runnable{
 
 
 	@Override
-	public void run(){//per non stressare troppo i database e il server, si può chiamare questo metodo con un ritardo
+	public void run(){//per non stressare troppo i database e il server, si puo' chiamare questo metodo con un ritardo
 		while(true){
-			if(element == null){//se non c'è un'istanza di element bisogna mettersi in coda al buffer
+			if(element == null){//se non c'e' un'istanza di element bisogna mettersi in coda al buffer
 				try{
 					AreaElement element = buffer.prelevaAreaElement(areaName);
 				}catch(InterruptedException exc){
 					System.err.println("InterruptedException");
 				}
 			}
-			//chiama i metodi sull'istanza di element(nel caso questo worker abbia già un'istanza di element, non ci sarà bisogno di mettersi in coda al buffer
+			//chiama i metodi sull'istanza di element(nel caso questo worker abbia gia' un'istanza di element, non ci sara' bisogno di mettersi in coda al buffer
 				//preleva i dati da kafka usando l'area contenuta in areaNames
                 this.element.getStreetsTraffic();
                 //preleva i dati da Neo4J tramite LongID
@@ -340,7 +340,7 @@ class AreaConsumer implements Runnable{
                 //converte i dati in formato GeoJson
                 this.element.convertToFeatures();
                 //invio i dati
-                if (this.getSession().isOpen()) {
+                if (element.getSession().isOpen()) {
                     try {
                         this.element.send();
                     } catch (IOException e) {
