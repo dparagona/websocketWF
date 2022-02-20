@@ -300,13 +300,13 @@ class AreaProducer implements Runnable{
 		//	if(buffer.contains(this.element)){
 			//	break; //devo capire se dopo il break devo interrompere questo threadz
 			//}
-			try{
+			//try{
 				//inserisce l'istanza di elemento nel buffer
 				buffer.aggiungiAreaElement(element);//non serve un while perche' questo thread viene messo in attesa se il buffer e' pieno, per cui appena il buffer si svuota, questo aggiunge l'elemento al buffer
 
-			}catch(Exception exc){
-				System.err.println("InterruptedException");
-			}
+			//}catch(Exception exc){
+			//	System.err.println("InterruptedException");
+			//}
 		//}
 	}
 }
@@ -326,11 +326,11 @@ class AreaConsumer implements Runnable{
 	public void run(){//per non stressare troppo i database e il server, si puo' chiamare questo metodo con un ritardo
 		while(true){
 			if(element == null){//se non c'e' un'istanza di element bisogna mettersi in coda al buffer
-				try{
+				//try{
 					AreaElement element = buffer.prelevaAreaElement(areaName);
-				}catch(InterruptedException exc){
-					System.err.println("InterruptedException");
-				}
+				//}catch(InterruptedException exc){
+				//	System.err.println("InterruptedException");
+				//}
 			}
 			//chiama i metodi sull'istanza di element(nel caso questo worker abbia gia' un'istanza di element, non ci sara' bisogno di mettersi in coda al buffer
 				//preleva i dati da kafka usando l'area contenuta in areaNames
