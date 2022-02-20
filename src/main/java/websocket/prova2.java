@@ -72,8 +72,8 @@ public class prova2 {
 			//bisogna prima pulire la mappa dalle aree che non sono state richieste
 			//per ogni chiave della mappa, se il nuovo insieme di aree richieste non contiene la chiave corrispondente all'i.esimo worker, elimina il worker che non e' stato richiesto
 			Iterator it = workers.keySet().iterator();
-			while(it.hasNext()){
-				String s = it.next().toString();
+			for(Map.Entry<String, Thread> entry : workers.entrySet()){
+				String s = entry.getKey();
 				System.out.println(s);
 				if(!areaNames.contains(s)){
 					//elimina il worker perche' non e' stata richiesta l'area di sua competenza
