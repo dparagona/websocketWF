@@ -97,8 +97,9 @@ public class prova2 {
         //gestisce la chiusura della connessione
         provaEndpoints.remove(this);
         for (String w : workers.keySet()) {
-            workers.remove(w);//pulizia della mappa
+            workers.remove(w).interrupt();//pulizia della mappa
 			//bisogna terminare tutti i workerz
+			
         }
     }
 
@@ -272,7 +273,6 @@ class AreaBuffer{
 			}
 		}
 		//AreaElement element = coda.removeFirst();
-		return null;
 	}
 }
 //PRODUTTORE
@@ -325,13 +325,13 @@ class AreaConsumer implements Runnable{
 	@Override
 	public void run(){//per non stressare troppo i database e il server, si puo' chiamare questo metodo con un ritardo
 		while(true){
-			if(element == null){//se non c'e' un'istanza di element bisogna mettersi in coda al buffer
+		//	if(element == null){//se non c'e' un'istanza di element bisogna mettersi in coda al buffer
 				//try{
 					AreaElement element = buffer.prelevaAreaElement(areaName);
 				//}catch(InterruptedException exc){
 				//	System.err.println("InterruptedException");
 				//}
-			}
+			//}
 			//chiama i metodi sull'istanza di element(nel caso questo worker abbia gia' un'istanza di element, non ci sara' bisogno di mettersi in coda al buffer
 				//preleva i dati da kafka usando l'area contenuta in areaNames
                 this.element.getStreetsTraffic();
