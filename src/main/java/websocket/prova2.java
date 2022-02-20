@@ -82,10 +82,7 @@ public class prova2 {
 				}
 			}
 			//per ogni area, se la mappa non contiene un worker corrispondente, ne istanzia uno, lo aggiunge alla mappa e lo fa partire
-            Iterator it2 = workers.keySet().iterator();
-			while(it2.hasNext()){
-				String s = it2.next().toString();
-				System.out.println(s);
+			for(String s : areaNames){
 				if(!workers.keySet().contains(s)){
 					//alloca tutto il necessario e avvia i processi da avviare
 					Thread produttore = new Thread(new AreaProducer(buffer, s, session));
