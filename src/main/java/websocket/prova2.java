@@ -36,7 +36,7 @@ public class prova2 {
     private final AreaNameLogic areaNameLogic = new AreaNameLogic(); //serve per ottenere le aree interne ad un riquadro
     private ArrayList<StreetMongo> streetsFromArea = new ArrayList<>(); //array di strade presenti nelle aree richieste, provenienti da mongo
     private ArrayList<Street> streetsWithGeometry = new ArrayList<>();  //array di strade contenenti un array che ne definisce la geometria, provenienti da Neo4J
-    private Map<String, Thread> workers = new ConcurrentHashMap<>();//mappa che contiene i vari workers
+    private Map<String, Thread> workers = new ConcurrentHashMap();//mappa che contiene i vari workers
 	private AreaBuffer buffer;
 
     @OnOpen
