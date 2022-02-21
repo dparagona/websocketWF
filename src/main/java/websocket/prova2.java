@@ -36,7 +36,7 @@ public class prova2 {
     private final AreaNameLogic areaNameLogic = new AreaNameLogic(); //serve per ottenere le aree interne ad un riquadro
     private ArrayList<StreetMongo> streetsFromArea = new ArrayList<>(); //array di strade presenti nelle aree richieste, provenienti da mongo
     private ArrayList<Street> streetsWithGeometry = new ArrayList<>();  //array di strade contenenti un array che ne definisce la geometria, provenienti da Neo4J
-    private Map<String, Thread> workers = new HashMap<>();//mappa che contiene i vari workers
+    private Map<String, Thread> workers = new ConcurrentHashMap<>();//mappa che contiene i vari workers
 	private AreaBuffer buffer;
 
     @OnOpen
@@ -71,11 +71,8 @@ public class prova2 {
 			
 			//bisogna prima pulire la mappa dalle aree che non sono state richieste
 			//per ogni chiave della mappa, se il nuovo insieme di aree richieste non contiene la chiave corrispondente all'i.esimo worker, elimina il worker che non e' stato richiesto
-			Iterator it = workers.entrySet().iterator();
-			while(it.hasNext()){
-				Map.Entry<String, Thread> entry = it.next();
-				String s = entry.geyKey();
-				System.out.println(s);
+			for(String s: workers.keySet()){
+				System.out.println("Interrotto "+s);
 				if(!areaNames.contains(s)){
 					//elimina il worker perche' non e' stata richiesta l'area di sua competenza
 					//workers.get(s).interrupt();
@@ -86,6 +83,7 @@ public class prova2 {
 			for(String s : areaNames){
 				if(!workers.keySet().contains(s)){
 					//alloca tutto il necessario e avvia i processi da avviare
+					System.out.println("Nuovo "+s);
 					Thread produttore = new Thread(new AreaProducer(buffer, s, session));
 					Thread consumatore = new Thread(new AreaConsumer(buffer, s));
 					produttore.start();
