@@ -91,7 +91,7 @@ public class prova2 {
 					//workers.put(s, consumatore);
 					//consumatore.start();
 					ArrayList<String> aNames = new ArrayList();
-					anames.add(s);
+					aNames.add(s);
 					AreaWorker worker = new AreaWorker(aNames, session);
 					worker.abilitate();
 					worker.start();
