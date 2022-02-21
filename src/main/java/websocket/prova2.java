@@ -84,14 +84,20 @@ public class prova2 {
 			for(String s : areaNames){
 				if(!workers.keySet().contains(s)){
 					//alloca tutto il necessario e avvia i processi da avviare
-					System.out.println("Nuovo "+s);
-					Thread produttore = new Thread(new AreaProducer(buffer, s, session));
-					Thread consumatore = new Thread(new AreaConsumer(buffer, s));
-					produttore.start();
-					workers.put(s, consumatore);
-					consumatore.start();
+					//System.out.println("Nuovo "+s);
+					//Thread produttore = new Thread(new AreaProducer(buffer, s, session));
+					//Thread consumatore = new Thread(new AreaConsumer(buffer, s));
+					//produttore.start();
+					//workers.put(s, consumatore);
+					//consumatore.start();
+					ArrayList<String> aNames = new ArrayList();
+					anames.add(s);
+					AreaWorker worker = new AreaWorker(anames, session);
+					worker.abilitate();
+					worker.start();
 				}
             }
+			
         }
     }
 
@@ -102,7 +108,6 @@ public class prova2 {
         for (String w : workers.keySet()) {
             workers.remove(w).interrupt();//pulizia della mappa
 			//bisogna terminare tutti i workerz
-			
         }
     }
 
