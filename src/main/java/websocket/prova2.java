@@ -111,7 +111,7 @@ public class prova2 {
         //gestisce la chiusura della connessione
         provaEndpoints.remove(this);
         for (String w : workers.keySet()) {
-			System.out.println("Interrotto "+s);
+			System.out.println("Interrotto "+w);
             workers.remove(w).stopThread();//pulizia della mappa
 			//bisogna terminare tutti i workerz
         }
@@ -194,7 +194,7 @@ class AreaElement{
         System.out.println("Recuperando i dati da Neo4j...");
 		try{
 			if(!streetsFromArea.isEmpty()){
-				ArrayList<Street> streets = database.getStreetsFromLinkIds(streetsFromArea.keySet());//si può anche testare il valore di ritorno di questo metodo (-1 non ritorna nulla)
+				ArrayList<Street> streets = database.getStreetsFromLinkIds(streetsFromArea.keySet());//si puo' anche testare il valore di ritorno di questo metodo (-1 non ritorna nulla)
 				for (Street s: streets){
 					streetsWithGeometry.put(s.getLinkId(), s);
 				}
