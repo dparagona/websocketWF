@@ -346,7 +346,7 @@ class AreaConsumer implements Runnable{
 			if(element == null){//se non c'e' un'istanza di element bisogna mettersi in coda al buffer
 				//try{
 					System.out.println("Elemento non trovato");
-					AreaElement element = buffer.prelevaAreaElement(areaName);
+					this.element = buffer.prelevaAreaElement(areaName);
 				//}catch(InterruptedException exc){
 				//	System.err.println("InterruptedException");
 				//}
