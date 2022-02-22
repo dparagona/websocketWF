@@ -81,22 +81,24 @@ public class prova2 {
 				}
 			}
 			//per ogni area, se la mappa non contiene un worker corrispondente, ne istanzia uno, lo aggiunge alla mappa e lo fa partire
-			for(String s : areaNames){
+			//for(String s : areaNames){
+				String s = areaNames.get(0);
 				if(!workers.keySet().contains(s)){
 					//alloca tutto il necessario e avvia i processi da avviare
-					//System.out.println("Nuovo "+s);
-					//Thread produttore = new Thread(new AreaProducer(buffer, s, session));
-					//Thread consumatore = new Thread(new AreaConsumer(buffer, s));
-					//produttore.start();
-					//workers.put(s, consumatore);
-					//consumatore.start();
-					ArrayList<String> aNames = new ArrayList();
-					aNames.add(s);
-					AreaWorker worker = new AreaWorker(aNames, session);
-					worker.abilitate();
-					worker.start();
+					System.out.println("Nuovo "+s);
+					Thread produttore = new Thread(new AreaProducer(buffer, s, session));
+					Thread consumatore = new Thread(new AreaConsumer(buffer, s));
+					produttore.start();
+					workers.put(s, consumatore);
+					consumatore.start();
+					System.out.println("Produttore e Consumatore avviati");
+					//ArrayList<String> aNames = new ArrayList();
+					//aNames.add(s);
+					//AreaWorker worker = new AreaWorker(aNames, session);
+					//worker.abilitate();
+					//worker.start();
 				}
-            }
+           // }
 			
         }
     }
@@ -261,6 +263,7 @@ class AreaBuffer{
 			}
 		}
 		coda.addFirst(element);
+		System.out.println("Elemento aggiunto al buffer");
 		notifyAll();
 	}
 	public synchronized AreaElement prelevaAreaElement(String areaName){
@@ -274,12 +277,16 @@ class AreaBuffer{
 
 		for(AreaElement e: coda){
 			if(e.getAreaName() == areaName){
+				System.out.println("Nome Area: "+e.getAreaName());
 				int position = coda.indexOf(e);
+				System.out.println("Posizioine Elemento: "+coda.indexOf(e));
 				AreaElement element = coda.remove(position);
 				notifyAll();
+				System.out.println("Elemento rimosso: "+element.toString());
 				return element;
 			}
 		}
+		System.out.println("Ciclo di prelevamento elemento terminato");
 		notifyAll();
 		//AreaElement element = coda.removeFirst();
 		return null;
@@ -313,7 +320,7 @@ class AreaProducer implements Runnable{
 			//try{
 				//inserisce l'istanza di elemento nel buffer
 				buffer.aggiungiAreaElement(element);//non serve un while perche' questo thread viene messo in attesa se il buffer e' pieno, per cui appena il buffer si svuota, questo aggiunge l'elemento al buffer
-
+				System.out.println("Aggiunta elemento eseguita");
 			//}catch(Exception exc){
 			//	System.err.println("InterruptedException");
 			//}
@@ -337,6 +344,7 @@ class AreaConsumer implements Runnable{
 		while(true){
 			if(element == null){//se non c'e' un'istanza di element bisogna mettersi in coda al buffer
 				//try{
+					System.out.println("Elemento non trovato");
 					AreaElement element = buffer.prelevaAreaElement(areaName);
 				//}catch(InterruptedException exc){
 				//	System.err.println("InterruptedException");
@@ -345,6 +353,7 @@ class AreaConsumer implements Runnable{
 			//chiama i metodi sull'istanza di element(nel caso questo worker abbia gia' un'istanza di element, non ci sara' bisogno di mettersi in coda al buffer
 				//preleva i dati da kafka usando l'area contenuta in areaNames
 				//if(element != null){
+				System.out.println("Elemento trovato");
 				try{
 					this.element.getStreetsTraffic();
 					//preleva i dati da Neo4J tramite LongID
