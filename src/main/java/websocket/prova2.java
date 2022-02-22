@@ -159,15 +159,19 @@ class AreaElement{
 	public void getStreetsTraffic() { // non dovrebbe piu' essere necessario effettuare la poll in un ciclo while, perche' ce n'e' gia' uno a monte, solo che in questo modo l'output sara' enorme, quindi mi converra' creare un kafka consumer fuori dall'elemento, per poi passarglielo come parametro nel costruttore 
         
         //while (true) {
-            System.out.println("Poll eseguito");
-            ConsumerRecords<String, String> streetResults = consumer.poll(Duration.ofMillis(10000));
-            //int i = 0;
-            for (ConsumerRecord<String, String> record : streetResults) {
-                //i++;
-                String value = record.value();
-                StreetMongo streetMongo = gson.fromJson(value, StreetMongo.class);
-                streetsFromArea.put(Long.valueOf(streetMongo.getLinkid()), streetMongo);
-            }
+			try{
+				System.out.println("Poll eseguito");
+				ConsumerRecords<String, String> streetResults = consumer.poll(Duration.ofMillis(10000));
+				//int i = 0;
+				for (ConsumerRecord<String, String> record : streetResults) {
+					//i++;
+					String value = record.value();
+					StreetMongo streetMongo = gson.fromJson(value, StreetMongo.class);
+					streetsFromArea.put(Long.valueOf(streetMongo.getLinkid()), streetMongo);
+				}
+			}catch(InterruptedException exc){
+				System.out.println("InterruptedException -> Kafka.consumer.poll()");
+			}
            // if (i != 0) {//se i!=0 l'array ha elementi, quindi esco dal while
             //    System.out.println("Dati prelevati da Kafka, Worker di " + areaNames.get(0)+".");
             //    i=0;
