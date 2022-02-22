@@ -187,11 +187,15 @@ class AreaElement{
 
         System.out.println("Recuperando i dati da Neo4j...");
 		try{
-			ArrayList<Street> streets = database.getStreetsFromLinkIds(streetsFromArea.keySet());
-			for (Street s: streets){
-				streetsWithGeometry.put(s.getLinkId(), s);
+			if(!streetsFromArea.isEmpty()){
+				ArrayList<Street> streets = database.getStreetsFromLinkIds(streetsFromArea.keySet());//si può anche testare il valore di ritorno di questo metodo (-1 non ritorna nulla)
+				for (Street s: streets){
+					streetsWithGeometry.put(s.getLinkId(), s);
+				}
+				System.out.println("Strade Recuperate");
+			}else{
+				System.out.println("Links non pervenuti da Kafka per : "+areaNames.get(0));
 			}
-			System.out.println("Strade Recuperate");
 		}catch(org.neo4j.driver.exceptions.NoSuchRecordException e){
 			System.out.println("Strade non trovate, c'e' stato un problema con neo4j");
 		}
