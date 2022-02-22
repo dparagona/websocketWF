@@ -111,6 +111,7 @@ public class prova2 {
         //gestisce la chiusura della connessione
         provaEndpoints.remove(this);
         for (String w : workers.keySet()) {
+			System.out.println("Interrotto "+s);
             workers.remove(w).stopThread();//pulizia della mappa
 			//bisogna terminare tutti i workerz
         }
