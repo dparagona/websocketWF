@@ -386,7 +386,7 @@ class AreaConsumer implements Runnable{
 						try {
 							this.element.send();
 							try {
-							Thread.sleep(180000);//180 000 millisecondi = 3 minuti
+							Thread.sleep(3000);//180 000 millisecondi = 3 minuti
 						} catch (InterruptedException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
