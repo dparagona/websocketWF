@@ -37,7 +37,7 @@ public class prova2 {
     private final AreaNameLogic areaNameLogic = new AreaNameLogic(); //serve per ottenere le aree interne ad un riquadro
     private ArrayList<StreetMongo> streetsFromArea = new ArrayList<>(); //array di strade presenti nelle aree richieste, provenienti da mongo
     private ArrayList<Street> streetsWithGeometry = new ArrayList<>();  //array di strade contenenti un array che ne definisce la geometria, provenienti da Neo4J
-    private Map<String, Thread> workers = new ConcurrentHashMap();//mappa che contiene i vari workers
+    private Map<String, AreaConsumer> workers = new ConcurrentHashMap();//mappa che contiene i vari workers
 	private AreaBuffer buffer;
 
     @OnOpen
@@ -77,7 +77,7 @@ public class prova2 {
 				if(!areaNames.contains(s)){
 					//elimina il worker perche' non e' stata richiesta l'area di sua competenza
 					//workers.get(s).interrupt();
-					workers.remove(s).interrupt();
+					workers.remove(s).stopThread();
 				}
 			}
 			//per ogni area, se la mappa non contiene un worker corrispondente, ne istanzia uno, lo aggiunge alla mappa e lo fa partire
@@ -86,11 +86,9 @@ public class prova2 {
 				if(!workers.keySet().contains(s)){
 					//alloca tutto il necessario e avvia i processi da avviare
 					System.out.println("Nuovo "+s);
-					Thread produttore = new Thread(new AreaProducer(buffer, s, session));
-					Thread consumatore = new Thread(new AreaConsumer(buffer, s));
-					produttore.start();
+					AreaProducer produttore = new AreaProducer(buffer, s, session);
+					AreaConsumer consumatore = new AreaConsumer(buffer, s);
 					workers.put(s, consumatore);
-					consumatore.start();
 					System.out.println("Produttore e Consumatore avviati");
 					//ArrayList<String> aNames = new ArrayList();
 					//aNames.add(s);
@@ -108,7 +106,7 @@ public class prova2 {
         //gestisce la chiusura della connessione
         provaEndpoints.remove(this);
         for (String w : workers.keySet()) {
-            workers.remove(w).interrupt();//pulizia della mappa
+            workers.remove(w).stopThread();//pulizia della mappa
 			//bisogna terminare tutti i workerz
         }
     }
@@ -228,7 +226,7 @@ class AreaElement{
             String toClient = gson.toJson(response);
             //System.out.println(toClient);
             this.session.getBasicRemote().sendText(toClient);
-
+			
             System.out.println("JSON inviato al client");
         }
     }
@@ -265,14 +263,14 @@ class AreaBuffer{
 			}
 		}
 		coda.addFirst(element);
-		System.out.println("Elemento aggiunto al buffer");
+		//System.out.println("Elemento aggiunto al buffer");
 		notifyAll();
 	}
 	public synchronized AreaElement prelevaAreaElement(String areaName){
 		while(isEmpty()){
 			try{
 				wait();
-				System.out.println("Consumer in attesa...");
+				//System.out.println("Consumer in attesa...");
 			}catch(InterruptedException exc){
 				System.err.println("InterruptedException");
 			}
@@ -280,16 +278,16 @@ class AreaBuffer{
 
 		for(AreaElement e: coda){
 			if(e.getAreaName() == areaName){
-				System.out.println("Nome Area: "+e.getAreaName());
+				//System.out.println("Nome Area: "+e.getAreaName());
 				int position = coda.indexOf(e);
-				System.out.println("Posizioine Elemento: "+coda.indexOf(e));
+				//System.out.println("Posizioine Elemento: "+coda.indexOf(e));
 				AreaElement element = coda.remove(position);
 				notifyAll();
-				System.out.println("Elemento rimosso: "+element.toString());
+				//System.out.println("Elemento rimosso: "+element.toString());
 				return element;
 			}
 		}
-		System.out.println("Ciclo di prelevamento elemento terminato");
+		//System.out.println("Ciclo di prelevamento elemento terminato");
 		notifyAll();
 		//AreaElement element = coda.removeFirst();
 		return null;
@@ -301,6 +299,9 @@ class AreaProducer implements Runnable{
 	private String areaName;
 	private Session session;
 	private AreaElement element;
+	private Thread thread;
+	private Boolean exitThread;
+	
 
 	public AreaProducer(AreaBuffer buffer, String areaName, Session session){
 		this.buffer = buffer;
@@ -311,6 +312,8 @@ class AreaProducer implements Runnable{
 		areas.add(this.areaName);
 
 		this.element = new AreaElement(areas, this.session);
+		this.thread = new Thread(this);
+		thread.start();
 	}
 
 	@Override
@@ -323,7 +326,7 @@ class AreaProducer implements Runnable{
 			//try{
 				//inserisce l'istanza di elemento nel buffer
 				buffer.aggiungiAreaElement(element);//non serve un while perche' questo thread viene messo in attesa se il buffer e' pieno, per cui appena il buffer si svuota, questo aggiunge l'elemento al buffer
-				System.out.println("Aggiunta elemento eseguita");
+				//System.out.println("Aggiunta elemento eseguita");
 			//}catch(Exception exc){
 			//	System.err.println("InterruptedException");
 			//}
@@ -335,16 +338,21 @@ class AreaConsumer implements Runnable{
 	private AreaBuffer buffer;
 	private String areaName;
 	private AreaElement element;
+	private Thread thread;
+	private Boolean exitThread;
 
 	public AreaConsumer(AreaBuffer buffer, String areaName){
 		this.buffer = buffer;
 		this.areaName = areaName;
+		this.thread = new Thread(this, areaName);
+		thread.start();
+		this.exitThread = false;
 	}
 
 
 	@Override
 	public void run(){//per non stressare troppo i database e il server, si puo' chiamare questo metodo con un ritardo
-		while(true){
+		while(!exitThread){
 			if(element == null){//se non c'e' un'istanza di element bisogna mettersi in coda al buffer
 				//try{
 					System.out.println("Elemento non trovato");
@@ -356,7 +364,7 @@ class AreaConsumer implements Runnable{
 			//chiama i metodi sull'istanza di element(nel caso questo worker abbia gia' un'istanza di element, non ci sara' bisogno di mettersi in coda al buffer
 				//preleva i dati da kafka usando l'area contenuta in areaNames
 				//if(element != null){
-				System.out.println("Elemento trovato");
+				//System.out.println("Elemento trovato");
 				try{
 					this.element.getStreetsTraffic();
 					//preleva i dati da Neo4J tramite LongID
@@ -367,6 +375,12 @@ class AreaConsumer implements Runnable{
 					if (element.getSession().isOpen()) {
 						try {
 							this.element.send();
+							try {
+							Thread.sleep(180000);//180 000 millisecondi = 3 minuti
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 						} catch (IOException e) {
 							System.out.println("Qualcosa e' andato storto durante l'invio del GeoJson.");
 							e.printStackTrace();
@@ -374,13 +388,16 @@ class AreaConsumer implements Runnable{
 					}else{
 						System.out.println("Sessione chiusa.");
 					}
+					
 				}catch(NullPointerException exc){
 					System.err.println("NullPointerException");
 				}
 			}
 		}
 	}
-
+	public void stopThread() {
+		exitThread = true;
+	}
 	public AreaElement getElement(){return this.element;}
 }
 
