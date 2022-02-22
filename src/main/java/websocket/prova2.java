@@ -177,7 +177,7 @@ class AreaElement{
             //    i=0;
 			//	break;
            // }
-        }
+        //}
     }
 	
 	 public void getStreetsFromNeo4J() {
