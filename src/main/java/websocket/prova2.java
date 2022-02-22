@@ -69,14 +69,19 @@ public class prova2 {
             int i = 0;
             System.out.println(">>AREE RICEVUTE");
             System.out.println(" ");
+			for(String s: areaNames){
+				System.out.println(s);
+			}
+			
+			System.out.println("------------------------------------------------------------------------------------------");
 			
 			//bisogna prima pulire la mappa dalle aree che non sono state richieste
 			//per ogni chiave della mappa, se il nuovo insieme di aree richieste non contiene la chiave corrispondente all'i.esimo worker, elimina il worker che non e' stato richiesto
 			for(String s: workers.keySet()){
-				System.out.println("Interrotto "+s);
 				if(!areaNames.contains(s)){
 					//elimina il worker perche' non e' stata richiesta l'area di sua competenza
 					//workers.get(s).interrupt();
+					System.out.println("Interrotto "+s);
 					workers.remove(s).stopThread();
 				}
 			}
@@ -89,7 +94,7 @@ public class prova2 {
 					AreaProducer produttore = new AreaProducer(buffer, s, session);
 					AreaConsumer consumatore = new AreaConsumer(buffer, s);
 					workers.put(s, consumatore);
-					System.out.println("Produttore e Consumatore avviati");
+					//System.out.println("Produttore e Consumatore avviati");
 					//ArrayList<String> aNames = new ArrayList();
 					//aNames.add(s);
 					//AreaWorker worker = new AreaWorker(aNames, session);
