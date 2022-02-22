@@ -270,6 +270,7 @@ class AreaBuffer{
 		while(isEmpty()){
 			try{
 				wait();
+				System.out.println("Consumer in attesa...");
 			}catch(InterruptedException exc){
 				System.err.println("InterruptedException");
 			}
