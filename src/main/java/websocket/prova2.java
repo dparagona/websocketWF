@@ -137,7 +137,7 @@ class AreaElement{
 	private HashMap<Long, StreetMongo> streetsFromArea = new HashMap<>(); //array di strade presenti nelle aree richieste, provenienti da mongo
     private HashMap<Long, Street> streetsWithGeometry = new HashMap<>();  //array di strade contenenti un array che ne definisce la geometria, provenienti da Neo4J
 	private ConfigurationSingleton conf = ConfigurationSingleton.getInstance();    
-	private FeatureCollection featureCollection = new FeatureCollection();
+	private FeatureCollection featureCollection;
     private Gson gson = new Gson();
 	private KafkaConsumer<String, String> consumer;
 
@@ -209,6 +209,7 @@ class AreaElement{
 
 	public void convertToFeatures() {
         System.out.println("Conversione dati in formato geojson...");
+		this.featureCollection = new FeatureCollection();
         for(Long key : streetsWithGeometry.keySet()){
             Street s = streetsWithGeometry.get(key);
             Properties props = new Properties();
